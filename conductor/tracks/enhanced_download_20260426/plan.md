@@ -7,10 +7,10 @@
 - [x] Task: Conductor - User Manual Verification 'Persistence & Settings' (Protocol in workflow.md) d24ff3f
 
 ## Phase 2: Metadata Fetching & Bridge API
-- [~] Task: Implement backend logic to fetch video metadata (Title, Thumbnail, Formats) via `yt-dlp`
-- [ ] Task: Add `GET /metadata` endpoint to the Express Bridge API for web app integration
-- [ ] Task: Create UI components to display metadata preview and a loading state
-- [ ] Task: Write Tests for the metadata fetching logic and the new API endpoint
+- [x] Task: Implement backend logic to fetch video metadata (Title, Thumbnail, Formats) via `yt-dlp` a718435
+- [x] Task: Add `GET /metadata` endpoint to the Express Bridge API for web app integration a718435
+- [x] Task: Create UI components to display metadata preview and a loading state a718435
+- [x] Task: Write Tests for the metadata fetching logic and the new API endpoint a718435
 - [ ] Task: Conductor - User Manual Verification 'Metadata Fetching & Bridge API' (Protocol in workflow.md)
 
 ## Phase 3: Quality Selection & Real-time Progress
