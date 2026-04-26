@@ -6,7 +6,7 @@ interface AppSettings {
 
 export default function SettingsPage(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>({ downloadPath: '' })
-  const [ytDlpVersion, setYtDlpVersion] = useState<string>('Checking...')
+  const [engineVersion, setEngineVersion] = useState<string>('Checking...')
   const [updating, setUpdating] = useState(false)
   const [updateMsg, setUpdateMsg] = useState('')
 
@@ -15,7 +15,7 @@ export default function SettingsPage(): React.JSX.Element {
       const s = await window.api.getSettings()
       setSettings(s)
       const v = await window.api.getYtDlpVersion()
-      setYtDlpVersion(v)
+      setEngineVersion(v)
     }
   }
 
@@ -34,17 +34,17 @@ export default function SettingsPage(): React.JSX.Element {
 
   const handleUpdate = async (): Promise<void> => {
     setUpdating(true)
-    setUpdateMsg('Updating yt-dlp binary...')
+    setUpdateMsg('Updating system core...')
     try {
       const res = await window.api.updateYtDlp()
       if (res.success) {
-        setYtDlpVersion(res.version || 'Updated')
-        setUpdateMsg('Update successful!')
+        setEngineVersion(res.version || 'Updated')
+        setUpdateMsg('Optimization complete!')
       } else {
-        setUpdateMsg(`Update failed: ${res.error}`)
+        setUpdateMsg(`Action failed: ${res.error}`)
       }
     } catch (err: any) {
-      setUpdateMsg(`Error: ${err.message}`)
+      setUpdateMsg(`System Error: ${err.message}`)
     } finally {
       setUpdating(false)
     }
@@ -55,8 +55,8 @@ export default function SettingsPage(): React.JSX.Element {
       <h2>Settings</h2>
       <div className="settings-grid">
         <div className="setting-card">
-          <h3>Download Location</h3>
-          <p>Choose where your videos will be saved.</p>
+          <h3>Storage Location</h3>
+          <p>Choose where your files will be saved on this device.</p>
           <div className="path-input-group">
             <input 
               type="text" 
@@ -68,22 +68,22 @@ export default function SettingsPage(): React.JSX.Element {
         </div>
 
         <div className="setting-card">
-          <h3>Binary Management</h3>
-          <p>Current yt-dlp version: <strong>{ytDlpVersion}</strong></p>
+          <h3>System Optimization</h3>
+          <p>Current Engine Version: <strong>{engineVersion}</strong></p>
           <button 
             onClick={handleUpdate} 
             className="btn-black" 
             disabled={updating}
           >
-            {updating ? 'Updating...' : 'Update yt-dlp'}
+            {updating ? 'Processing...' : 'Update Engine'}
           </button>
           {updateMsg && <p className="update-msg">{updateMsg}</p>}
         </div>
 
         <div className="setting-card">
-          <h3>About Bridge</h3>
-          <p>yt-dlp Companion App v1.0.0</p>
-          <p>Powered by Electron + Vite + yt-dlp-exec</p>
+          <h3>About App</h3>
+          <p>YT Companion Bridge v1.0.0</p>
+          <p>Optimized for high-speed local processing.</p>
         </div>
       </div>
     </div>

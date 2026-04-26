@@ -27,8 +27,53 @@ function NavItem({ to, icon: Icon, label }: { to: string; icon: any; label: stri
 }
 
 function App(): React.JSX.Element {
+  const [engineReady, setEngineReady] = React.useState(false)
+  const [engineStatus, setEngineStatus] = React.useState('Initializing Engine...')
+
+  const checkEngine = async (): Promise<void> => {
+    if (!window.api) return
+    setEngineStatus('Checking for updates...')
+    try {
+      // Small delay for Brutalist dramatic effect
+      await new Promise(r => setTimeout(r, 1500))
+      const res = await window.api.updateYtDlp()
+      if (res.success) {
+        setEngineStatus('Engine is Up to Date!')
+      } else {
+        setEngineStatus('Engine Ready.')
+      }
+      await new Promise(r => setTimeout(r, 1000))
+      setEngineReady(true)
+    } catch (err) {
+      setEngineStatus('Engine initialization failed.')
+      console.error(err)
+      // Still allow app to open, maybe it works anyway
+      setTimeout(() => setEngineReady(true), 2000)
+    }
+  }
+
+  React.useEffect(() => {
+    checkEngine()
+  }, [])
+
   return (
     <Router>
+      {!engineReady && (
+        <div className="startup-overlay">
+          <div className="startup-modal">
+            <div className="startup-header">
+              <div className="logo-box small">YT</div>
+              <h3>System Startup</h3>
+            </div>
+            <div className="startup-body">
+              <div className="spinner large"></div>
+              <div className="startup-status">{engineStatus}</div>
+              <p>Optimizing downloading environment...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="app-layout">
         <aside className="sidebar">
           <header className="sidebar-logo">
@@ -76,6 +121,80 @@ function App(): React.JSX.Element {
           margin: 0;
           padding: 0;
           overflow: hidden;
+        }
+
+        /* Startup Overlay */
+        .startup-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0,0,0,0.85);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(5px);
+        }
+
+        .startup-modal {
+          background-color: var(--white);
+          border: var(--border-thick) solid var(--black);
+          width: 500px;
+          box-shadow: 20px 20px 0px var(--orange);
+          animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .startup-header {
+          background-color: var(--black);
+          color: var(--white);
+          padding: 15px;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          border-bottom: var(--border-thick) solid var(--black);
+        }
+
+        .startup-header h3 {
+          margin: 0;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+        }
+
+        .logo-box.small {
+          font-size: 1rem;
+          padding: 5px;
+        }
+
+        .startup-body {
+          padding: 40px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .startup-status {
+          font-size: 1.5rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          margin: 20px 0 10px 0;
+          background: var(--yellow);
+          padding: 5px 15px;
+          border: 3px solid var(--black);
+        }
+
+        .spinner.large {
+          width: 60px;
+          height: 60px;
+          border: 8px solid var(--gray);
+          border-top-color: var(--blue);
+        }
+
+        @keyframes scaleIn {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
         }
 
         .app-layout {
@@ -429,6 +548,19 @@ function App(): React.JSX.Element {
           font-weight: 900;
           text-transform: uppercase;
           cursor: pointer;
+        }
+
+        .spinner {
+          width: 40px;
+          height: 40px;
+          border: 6px solid var(--gray);
+          border-top-color: var(--blue);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </Router>

@@ -24,7 +24,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Library & Settings Migration' (Protocol in workflow.md)
 
 ## Phase 5: Binary Management (yt-dlp Auto-update)
-- [ ] Task: Implement backend logic to check yt-dlp version and availability
-- [ ] Task: Implement auto-update logic using `yt-dlp-exec`
-- [ ] Task: Add "Binary Status" and "Update Now" controls to the Settings page
+- [x] Task: Implement backend logic to check yt-dlp version and availability a97737c
+- [x] Task: Implement auto-update logic using `yt-dlp-exec` a97737c
+- [x] Task: Add "Binary Status" and "Update Now" controls to the Settings page a97737c
 - [ ] Task: Conductor - User Manual Verification 'Binary Management' (Protocol in workflow.md)

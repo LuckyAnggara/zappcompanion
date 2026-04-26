@@ -21,10 +21,11 @@ This track transforms the application from a single-page layout into a multi-pag
    - Replace the form with a focused "Active Download" card showing the progress bar, thumbnail, and cancel/stop options.
    - Ensure the user cannot trigger a second download until the current one finishes or fails.
 
-4. **Binary Management (yt-dlp Auto-update)**
-   - Implement a startup check to verify the presence and version of the `yt-dlp` binary.
-   - Add an automatic update check on application launch.
-   - Provide manual update controls in the Settings page.
+4. **Engine Management (Auto-update)**
+   - Implement a "Brutalist" startup modal that checks for engine updates automatically.
+   - If an update is available, download it automatically with a clear user-friendly progress state.
+   - If no update is found, show a brief "Engine is Ready" message before dismissing.
+   - **Crucial:** Remove all technical references to "yt-dlp", "binary", or "exec" from the UI. Refer to it simply as "the Engine".
 
 5. **Brutalist Component Refresh**
    - Adjust the `container` and `main` layout to accommodate the new sidebar.

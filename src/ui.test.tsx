@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
 import React from 'react'
 import App from './renderer/src/App'
 import '@testing-library/jest-dom/vitest'
@@ -16,20 +16,11 @@ window.electron = {
 
 // @ts-expect-error - mock window
 window.api = {
-  getMetadata: vi.fn(async () => ({
-    title: 'Test Video',
-    thumbnail: 'test.jpg',
-    uploader: 'Test Creator',
-    formats: []
-  })),
+  getMetadata: vi.fn(),
   getSettings: vi.fn(async () => ({ downloadPath: '' })),
-  setSettings: vi.fn(),
-  selectDirectory: vi.fn(),
-  getHistory: vi.fn(async () => [
-    { id: '1', title: 'Old Video', filePath: '/path/1', date: new Date().toISOString(), status: 'completed' }
-  ]),
-  openFile: vi.fn(),
-  showInFolder: vi.fn()
+  getHistory: vi.fn(async () => []),
+  getYtDlpVersion: vi.fn(async () => '2025.01.01'),
+  updateYtDlp: vi.fn(async () => ({ success: true, version: '2025.01.01' }))
 }
 
 describe('UI Regression Tests (Temporary Commented out during overhaul)', () => {
@@ -40,6 +31,8 @@ describe('UI Regression Tests (Temporary Commented out during overhaul)', () => 
 
   it('renders app logo in sidebar', async () => {
     render(<App />)
-    expect(screen.getByText(/YT/i)).toBeInTheDocument()
+    // There are two 'YT' logos now (one in startup, one in sidebar)
+    const logos = await screen.findAllByText(/YT/i)
+    expect(logos.length).toBeGreaterThan(0)
   })
 })
