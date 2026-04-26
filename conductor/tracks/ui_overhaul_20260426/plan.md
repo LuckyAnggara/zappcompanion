@@ -1,7 +1,7 @@
 # Implementation Plan: UI Overhaul with Sidebar & Page Routing
 
 ## Phase 1: Architecture & Dependencies
-- [ ] Task: Install new dependencies (`react-router-dom`, `lucide-react`, `@radix-ui/react-tooltip`)
+- [~] Task: Install new dependencies (`react-router-dom`, `lucide-react`, `@radix-ui/react-tooltip`)
 - [ ] Task: Set up the main routing structure in `App.tsx` and create empty page components
 - [ ] Task: Conductor - User Manual Verification 'Architecture & Dependencies' (Protocol in workflow.md)
 
