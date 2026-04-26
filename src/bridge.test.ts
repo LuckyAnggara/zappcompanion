@@ -1,8 +1,19 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, vi } from 'vitest'
 import request from 'supertest'
 
-// We will implement the app in src/main/bridge.ts
-// For now, these tests will fail because the file doesn't exist or is empty.
+// Mock Electron and Store before importing bridge
+vi.mock('electron', () => ({
+  app: { getPath: vi.fn(() => '/mock/downloads') }
+}))
+
+vi.mock('electron-store', () => {
+  return {
+    default: class {
+      get() { return { downloadPath: '' } }
+      set() { }
+    }
+  }
+})
 
 describe('Express Bridge API', () => {
   let app: any
@@ -12,7 +23,7 @@ describe('Express Bridge API', () => {
       const module = await import('./main/bridge')
       app = module.default
     } catch (e) {
-      // Expected to fail until bridge.ts is created
+      console.error(e)
     }
   })
 

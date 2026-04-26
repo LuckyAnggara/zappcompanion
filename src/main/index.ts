@@ -89,35 +89,56 @@ app.whenReady().then(() => {
   })
 
   // IPC Download Handler
-  ipcMain.on('download-video', (event, url: string) => {
+  ipcMain.on('download-video', (event, { url, formatId, metadata }: { url: string; formatId?: string; metadata?: any }) => {
     const settings = store.get('settings')
     const downloadPath = settings.downloadPath || app.getPath('downloads')
 
-    ytDlp(url, {
+    const options: any = {
       output: join(downloadPath, '%(title)s.%(ext)s'),
       noCheckCertificates: true,
       noWarnings: true,
-      addHeader: ['referer:youtube.com', 'user-agent:googlebot']
-    })
-      .then(() => {
-        // Add to history after successful download
-        const history = store.get('history') as any[]
-        const newItem = {
-          id: Date.now().toString(),
-          url,
-          title: 'Downloaded Video',
-          thumbnail: '',
-          filePath: downloadPath,
-          date: new Date().toISOString(),
-          status: 'completed'
-        }
-        store.set('history', [newItem, ...history])
+      addHeader: ['referer:youtube.com', 'user-agent:googlebot'],
+      mergeOutputFormat: 'mp4',
+      newline: true
+    }
 
-        event.reply('download-complete', { status: 'success', url })
-      })
-      .catch(err => {
-        event.reply('download-error', { status: 'error', message: err.message, url })
-      })
+    if (formatId) {
+      options.format = formatId === 'best' ? 'bestvideo+bestaudio/best' : `${formatId}+bestaudio/best`
+    }
+
+    const process = ytDlp.exec(url, options)
+
+    process.stdout?.on('data', (data: string) => {
+      const line = data.toString()
+      const match = line.match(/\[download\]\s+(\d+\.\d+)%/)
+      if (match) {
+        const progress = parseFloat(match[1])
+        event.reply('download-progress', { url, progress })
+      }
+    })
+
+    process.stderr?.on('data', (data: string) => {
+      console.error('yt-dlp stderr:', data.toString())
+    })
+
+    process.then(() => {
+      // Add to history after successful download
+      const history = store.get('history') as any[]
+      const newItem = {
+        id: Date.now().toString(),
+        url,
+        title: metadata?.title || 'Downloaded Video',
+        thumbnail: metadata?.thumbnail || '',
+        filePath: downloadPath,
+        date: new Date().toISOString(),
+        status: 'completed'
+      }
+      store.set('history', [newItem, ...history])
+
+      event.reply('download-complete', { status: 'success', url })
+    }).catch(err => {
+      event.reply('download-error', { status: 'error', message: err.message, url })
+    })
   })
 
   createWindow()

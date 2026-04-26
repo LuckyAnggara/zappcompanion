@@ -60,7 +60,7 @@ describe('Brutalist UI components', () => {
     
     await waitFor(() => {
       expect(screen.getByText(/Test Video/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Download Best Quality/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Download Selected/i })).toBeInTheDocument()
     })
   })
 })

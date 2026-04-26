@@ -13,6 +13,8 @@ function App(): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([])
   const [metadata, setMetadata] = useState<Metadata | null>(null)
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
+  const [selectedFormat, setSelectedFormat] = useState('best')
 
   useEffect(() => {
     if (!window.electron) {
@@ -23,24 +25,33 @@ function App(): React.JSX.Element {
     const handleComplete = (_event, arg): void => {
       setStatus(`Success: Downloaded ${arg.url}`)
       setLogs(prev => [...prev, `[SUCCESS] ${arg.url}`])
+      setProgress(null)
     }
 
     const handleError = (_event, arg): void => {
       setStatus(`Error: ${arg.message}`)
       setLogs(prev => [...prev, `[ERROR] ${arg.url}: ${arg.message}`])
+      setProgress(null)
+    }
+
+    const handleProgress = (_event, arg): void => {
+      setProgress(arg.progress)
     }
 
     window.electron.ipcRenderer.on('download-complete', handleComplete)
     window.electron.ipcRenderer.on('download-error', handleError)
+    window.electron.ipcRenderer.on('download-progress', handleProgress)
 
     return () => {
-      // Cleanup listeners if needed
+      // Note: In real app we might need to remove specific listeners if electronAPI supports it
     }
   }, [])
 
   const handleFetchMetadata = async (): Promise<void> => {
     if (!url) return
     setLoading(true)
+    setProgress(null)
+    setMetadata(null)
     setStatus(`Fetching metadata for: ${url}`)
     try {
       const data = await window.api.getMetadata(url)
@@ -58,12 +69,23 @@ function App(): React.JSX.Element {
   const handleDownload = (): void => {
     if (url) {
       setStatus(`Starting download for: ${url}`)
-      setLogs(prev => [...prev, `[INFO] Requesting ${url}`])
-      window.electron.ipcRenderer.send('download-video', url)
-      setUrl('')
+      setLogs(prev => [...prev, `[INFO] Requesting ${url} (Format: ${selectedFormat})`])
+      window.electron.ipcRenderer.send('download-video', { 
+        url, 
+        formatId: selectedFormat,
+        metadata: { title: metadata?.title, thumbnail: metadata?.thumbnail }
+      })
       setMetadata(null)
     }
   }
+
+  // Filter unique formats with resolution
+  const availableFormats = metadata?.formats
+    ? metadata.formats
+        .filter((f) => f.vcodec !== 'none' && f.resolution)
+        .filter((v, i, a) => a.findIndex((t) => t.resolution === v.resolution) === i)
+        .sort((a, b) => (parseInt(b.height) || 0) - (parseInt(a.height) || 0))
+    : []
 
   return (
     <div className="container">
@@ -96,8 +118,25 @@ function App(): React.JSX.Element {
               <div className="details">
                 <h2>{metadata.title}</h2>
                 <p>By: {metadata.uploader}</p>
+                
+                <div className="quality-selector">
+                  <label>Select Quality:</label>
+                  <select 
+                    value={selectedFormat} 
+                    onChange={(e) => setSelectedFormat(e.target.value)}
+                    className="brutalist-select"
+                  >
+                    <option value="best">Best Quality (Auto)</option>
+                    {availableFormats.map((f) => (
+                      <option key={f.format_id} value={f.format_id}>
+                        {f.resolution} ({f.ext})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <button onClick={handleDownload} className="brutalist-button download-btn">
-                  Download Best Quality
+                  Download Selected
                 </button>
               </div>
             </div>
@@ -106,6 +145,12 @@ function App(): React.JSX.Element {
 
         <div className="status-banner">
           {status}
+          {progress !== null && (
+            <div className="progress-container">
+              <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+              <span className="progress-text">{progress}%</span>
+            </div>
+          )}
         </div>
 
         <div className="log-area">
@@ -126,6 +171,7 @@ function App(): React.JSX.Element {
           --white: #ffffff;
           --black: #000000;
           --gray: #eeeeee;
+          --yellow: #fff9c4;
         }
 
         body {
@@ -177,7 +223,7 @@ function App(): React.JSX.Element {
         }
 
         .brutalist-input:focus {
-          background-color: #fff9c4;
+          background-color: var(--yellow);
         }
 
         .brutalist-button {
@@ -210,6 +256,7 @@ function App(): React.JSX.Element {
           margin-bottom: 20px;
           padding: 15px;
           background-color: #fff;
+          box-shadow: 10px 10px 0px var(--black);
         }
 
         .preview-content {
@@ -218,15 +265,42 @@ function App(): React.JSX.Element {
         }
 
         .thumbnail {
-          width: 200px;
+          width: 240px;
           height: auto;
           border: 4px solid var(--black);
+        }
+
+        .details {
+          flex-grow: 1;
         }
 
         .details h2 {
           margin: 0 0 10px 0;
           font-size: 1.5rem;
           text-transform: uppercase;
+        }
+
+        .quality-selector {
+          margin: 15px 0;
+          border: 2px solid var(--black);
+          padding: 10px;
+          background-color: var(--gray);
+        }
+
+        .quality-selector label {
+          display: block;
+          font-weight: bold;
+          margin-bottom: 5px;
+          text-transform: uppercase;
+        }
+
+        .brutalist-select {
+          width: 100%;
+          padding: 8px;
+          border: 3px solid var(--black);
+          font-family: inherit;
+          font-weight: bold;
+          outline: none;
         }
 
         .download-btn {
@@ -237,11 +311,36 @@ function App(): React.JSX.Element {
         .status-banner {
           background-color: var(--black);
           color: var(--orange);
-          padding: 10px;
+          padding: 15px;
           font-weight: bold;
           margin-bottom: 20px;
           text-transform: uppercase;
-          border-left: 10px solid var(--blue);
+          border-left: 15px solid var(--blue);
+        }
+
+        .progress-container {
+          margin-top: 10px;
+          height: 30px;
+          background-color: #333;
+          border: 2px solid var(--white);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .progress-bar {
+          height: 100%;
+          background-color: var(--blue);
+          transition: width 0.3s;
+        }
+
+        .progress-text {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: var(--white);
+          font-size: 1rem;
+          text-shadow: 1px 1px 2px var(--black);
         }
 
         .log-area {
@@ -260,7 +359,7 @@ function App(): React.JSX.Element {
 
         .log-content {
           padding: 10px;
-          max-height: 200px;
+          max-height: 150px;
           overflow-y: auto;
           font-size: 0.9rem;
         }

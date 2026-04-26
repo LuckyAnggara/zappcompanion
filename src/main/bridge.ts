@@ -3,6 +3,7 @@ import cors from 'cors'
 import { app as electronApp } from 'electron'
 import { join } from 'path'
 import ytDlp from 'yt-dlp-exec'
+import store from './store'
 
 const app = express()
 const PORT = 4000
@@ -53,23 +54,30 @@ app.get('/metadata', async (req, res) => {
 })
 
 app.post('/download', async (req, res) => {
-  const { url } = req.body
+  const { url, formatId } = req.body
 
   if (!url || !url.startsWith('http')) {
     return res.status(400).json({ status: 'error', message: 'Invalid URL' })
   }
 
   // Determine download path (user's Downloads folder)
-  const downloadPath = electronApp ? electronApp.getPath('downloads') : join(process.cwd(), 'downloads')
+  const settings = store.get('settings')
+  const downloadPath = settings.downloadPath || (electronApp ? electronApp.getPath('downloads') : join(process.cwd(), 'downloads'))
 
-  // Trigger yt-dlp download in the background
-  // For now, we just trigger it and return immediately as requested
-  ytDlp(url, {
+  const options: any = {
     output: join(downloadPath, '%(title)s.%(ext)s'),
     noCheckCertificates: true,
     noWarnings: true,
-    addHeader: ['referer:youtube.com', 'user-agent:googlebot']
-  }).catch((err) => {
+    addHeader: ['referer:youtube.com', 'user-agent:googlebot'],
+    mergeOutputFormat: 'mp4'
+  }
+
+  if (formatId) {
+    options.format = formatId === 'best' ? 'bestvideo+bestaudio/best' : `${formatId}+bestaudio/best`
+  }
+
+  // Trigger yt-dlp download in the background
+  ytDlp(url, options).catch((err) => {
     console.error('yt-dlp error:', err)
   })
 

@@ -20,6 +20,7 @@ interface Schema {
 }
 
 const store = new Store<Schema>({
+  name: 'yt-dlp-bridge-settings',
   defaults: {
     settings: {
       downloadPath: ''
