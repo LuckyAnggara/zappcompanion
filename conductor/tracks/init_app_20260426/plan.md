@@ -18,7 +18,7 @@
 ## Phase 3: Core Brutalist UI (Renderer & Preload)
 
 - [x] Task: Write Tests for React UI components (URL input, Download Button, Progress Bar) 692687c
-- [~] Task: Implement secure IPC communication in `preload.js`
-- [ ] Task: Implement base React UI with Orange/White/Blue Brutalist styling
+- [x] Task: Implement secure IPC communication in `preload.js` a1ded1e
+- [~] Task: Implement base React UI with Orange/White/Blue Brutalist styling
 - [ ] Task: Connect React UI to `yt-dlp-exec` via IPC for manual local downloads
 - [ ] Task: Conductor - User Manual Verification 'Core Brutalist UI (Renderer & Preload)' (Protocol in workflow.md)

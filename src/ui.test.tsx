@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
 import App from './renderer/src/App'
 import '@testing-library/jest-dom/vitest'
@@ -14,6 +14,11 @@ window.electron = {
 }
 
 describe('Brutalist UI components', () => {
+  beforeEach(() => {
+    cleanup()
+    vi.clearAllMocks()
+  })
+
   it('renders title, input, and download button', () => {
     render(<App />)
     expect(screen.getByText(/yt-dlp Bridge/i)).toBeInTheDocument()
@@ -36,7 +41,6 @@ describe('Brutalist UI components', () => {
     fireEvent.change(input, { target: { value: 'https://youtube.com/test' } })
     fireEvent.click(button)
     
-    // This will be implemented via IPC
     expect(window.electron.ipcRenderer.send).toHaveBeenCalledWith('download-video', 'https://youtube.com/test')
   })
 })
