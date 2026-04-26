@@ -27,4 +27,4 @@
 - [x] Task: Implement backend logic to check yt-dlp version and availability a97737c
 - [x] Task: Implement auto-update logic using `yt-dlp-exec` a97737c
 - [x] Task: Add "Binary Status" and "Update Now" controls to the Settings page a97737c
-- [ ] Task: Conductor - User Manual Verification 'Binary Management' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Binary Management' (Protocol in workflow.md) e127dfd
