@@ -52,7 +52,7 @@ package.json: Berisi semua dependency yang diperlukan (electron, yt-dlp-exec, ex
 
 main.js: Kode lengkap untuk Main process, termasuk pembuatan window, setup Express server, penanganan CORS, dan logika yt-dlp-exec.
 
-preload.js: Kode bridge yang aman (menggunakan contextBridge dan ipcRenderer) untuk menghubungkan UI Internal dengan Main process untuk fitur download internal.
+preload.js: Kode bridge yang aman (menggunakan contextBridge dan ipcRenderer) untuk menghubungkan UI Internal dengan Main process for fitur download internal.
 
 index.html & renderer.js: UI sederhana untuk fitur download internal.
 
@@ -83,21 +83,26 @@ This Electron desktop application acts as a companion "bridge" for a web-based f
 **Advanced Brutalism:**
 
 - The user interface embraces a brutalist design philosophy with bold orange, white, and blue as dominant colors.
-- Features include a download queue, a history list, and an area for detailed logs.
-- The UI contains an input field for video URLs, a download button, and progress indicators showing download status in real-time.
+- Features include a metadata preview box, a quality selection list, a persistent download library, and an area for detailed logs.
+- The UI contains an input field for video URLs, a FETCH button, a quality-specific DOWNLOAD button, and a real-time progress bar with percentage.
 
 ## Core Features
 
 1. **Local API (The Bridge):**
    - Runs a lightweight Express.js HTTP server on a local port (e.g., 4000).
    - Provides an endpoint (`GET /ping`) to check readiness.
-   - Provides a download endpoint (`POST /download`) that triggers `yt-dlp-exec` and saves files to the user's 'Downloads' folder.
-2. **Security & CORS:**
-   - Enforces **Strict CORS** to ensure only authorized frontend domains (e.g., production URL and `localhost:3000` for development) can connect.
+   - Provides a metadata endpoint (`GET /metadata`) for video previews and a download endpoint (`POST /download`) supporting format selection.
+2. **Metadata & Quality Selection:**
+   - Fetches video thumbnail, title, and available formats before downloading.
+   - Supports choosing specific resolutions (e.g., 1080p, 720p) and auto-converting to `.mp4` using FFmpeg muxing.
+3. **Persistent Library & Settings:**
+   - A built-in "Library" displays download history with thumbnails, allowing users to "Play" files or "Open Folder" directly.
+   - A "Settings" menu allows users to change the default download directory.
+4. **Security & CORS:**
+   - Enforces **Strict CORS** to ensure only authorized frontend domains can connect.
    - Includes **Dynamic CORS** functionality, allowing advanced users to configure or add allowed domains via application settings.
-3. **Internal UI Downloading:**
-   - Users can manually paste URLs and download videos directly within the companion app, bypassing the web frontend if needed.
-   - Real-time progress bars, completion status, and error logs are fully visible.
+5. **Internal UI Downloading:**
+   - Users can manually paste URLs and download videos directly within the companion app.
 
 ## Technical Requirements
 

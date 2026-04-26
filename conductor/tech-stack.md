@@ -4,6 +4,8 @@
 
 - **Application Framework:** Electron.js (Latest Stable)
 - **Binary Execution:** `yt-dlp-exec` (Node.js wrapper for `yt-dlp`)
+- **Persistence:** `electron-store` (For local settings and download history)
+- **Media Handling:** FFmpeg (Utilized by yt-dlp for merging video/audio and MP4 muxing)
 
 ## Language & Environment
 

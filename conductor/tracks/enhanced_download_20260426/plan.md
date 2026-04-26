@@ -20,9 +20,9 @@
 - [x] Task: Write Tests for progress parsing and download triggering with format selection de9c828
 - [x] Task: Conductor - User Manual Verification 'Quality Selection & Real-time Progress' (Protocol in workflow.md) de9c828
 
-## Phase 4: Library View & File Management
-- [~] Task: Implement the Library UI section using a Brutalist list style
-- [ ] Task: Add functionality to "Open in Folder" and "Play" (open file) for downloaded items
-- [ ] Task: Ensure the Library persists and updates automatically after each download
-- [ ] Task: Write Tests for the Library UI state and file interaction logic
-- [ ] Task: Conductor - User Manual Verification 'Library View & File Management' (Protocol in workflow.md)
+## Phase 4: Library View & File Management [checkpoint: ef68da1]
+- [x] Task: Implement the Library UI section using a Brutalist list style ef68da1
+- [x] Task: Add functionality to "Open in Folder" and "Play" (open file) for downloaded items ef68da1
+- [x] Task: Ensure the Library persists and updates automatically after each download ef68da1
+- [x] Task: Write Tests for the Library UI state and file interaction logic ef68da1
+- [x] Task: Conductor - User Manual Verification 'Library View & File Management' (Protocol in workflow.md) ef68da1
