@@ -9,7 +9,9 @@ const api = {
   getHistory: () => ipcRenderer.invoke('get-history'),
   getMetadata: (url: string) => ipcRenderer.invoke('get-metadata', url),
   openFile: (path: string) => ipcRenderer.invoke('open-file', path),
-  showInFolder: (path: string) => ipcRenderer.invoke('show-in-folder', path)
+  showInFolder: (path: string) => ipcRenderer.invoke('show-in-folder', path),
+  getYtDlpVersion: () => ipcRenderer.invoke('get-yt-dlp-version'),
+  updateYtDlp: () => ipcRenderer.invoke('update-yt-dlp')
 }
 
 if (process.contextIsolated) {

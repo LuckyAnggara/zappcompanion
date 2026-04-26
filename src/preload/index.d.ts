@@ -11,6 +11,8 @@ declare global {
       getMetadata: (url: string) => Promise<any>
       openFile: (path: string) => Promise<void>
       showInFolder: (path: string) => Promise<void>
+      getYtDlpVersion: () => Promise<string>
+      updateYtDlp: () => Promise<{ success: boolean; version?: string; error?: string }>
     }
   }
 }

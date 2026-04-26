@@ -96,6 +96,29 @@ app.whenReady().then(() => {
     shell.showItemInFolder(path)
   })
 
+  // yt-dlp Management IPC
+  ipcMain.handle('get-yt-dlp-version', async () => {
+    try {
+      const version = await ytDlp('--version')
+      return version.trim()
+    } catch (err: any) {
+      return 'Not Found'
+    }
+  })
+
+  ipcMain.handle('update-yt-dlp', async () => {
+    try {
+      // yt-dlp-exec handles binary updates if you run it with update: true 
+      // or we can just try to run a command and it might auto-download.
+      // Actually, yt-dlp has its own -U flag.
+      await ytDlp('-U')
+      const newVersion = await ytDlp('--version')
+      return { success: true, version: newVersion.trim() }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+
   // IPC Download Handler
   ipcMain.on('download-video', (event, { url, formatId, metadata }: { url: string; formatId?: string; metadata?: any }) => {
     const settings = store.get('settings')

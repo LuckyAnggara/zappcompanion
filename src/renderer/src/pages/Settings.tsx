@@ -6,16 +6,21 @@ interface AppSettings {
 
 export default function SettingsPage(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>({ downloadPath: '' })
+  const [ytDlpVersion, setYtDlpVersion] = useState<string>('Checking...')
+  const [updating, setUpdating] = useState(false)
+  const [updateMsg, setUpdateMsg] = useState('')
 
-  const loadSettings = async (): Promise<void> => {
+  const loadData = async (): Promise<void> => {
     if (window.api) {
-      const data = await window.api.getSettings()
-      setSettings(data)
+      const s = await window.api.getSettings()
+      setSettings(s)
+      const v = await window.api.getYtDlpVersion()
+      setYtDlpVersion(v)
     }
   }
 
   useEffect(() => {
-    loadSettings()
+    loadData()
   }, [])
 
   const handleSelectDir = async (): Promise<void> => {
@@ -24,6 +29,24 @@ export default function SettingsPage(): React.JSX.Element {
       const newSettings = { ...settings, downloadPath: path }
       await window.api.setSettings(newSettings)
       setSettings(newSettings)
+    }
+  }
+
+  const handleUpdate = async (): Promise<void> => {
+    setUpdating(true)
+    setUpdateMsg('Updating yt-dlp binary...')
+    try {
+      const res = await window.api.updateYtDlp()
+      if (res.success) {
+        setYtDlpVersion(res.version || 'Updated')
+        setUpdateMsg('Update successful!')
+      } else {
+        setUpdateMsg(`Update failed: ${res.error}`)
+      }
+    } catch (err: any) {
+      setUpdateMsg(`Error: ${err.message}`)
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -42,6 +65,19 @@ export default function SettingsPage(): React.JSX.Element {
             />
             <button onClick={handleSelectDir} className="btn-black">Change</button>
           </div>
+        </div>
+
+        <div className="setting-card">
+          <h3>Binary Management</h3>
+          <p>Current yt-dlp version: <strong>{ytDlpVersion}</strong></p>
+          <button 
+            onClick={handleUpdate} 
+            className="btn-black" 
+            disabled={updating}
+          >
+            {updating ? 'Updating...' : 'Update yt-dlp'}
+          </button>
+          {updateMsg && <p className="update-msg">{updateMsg}</p>}
         </div>
 
         <div className="setting-card">
