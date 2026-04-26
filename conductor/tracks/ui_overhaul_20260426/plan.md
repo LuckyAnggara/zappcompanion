@@ -5,14 +5,14 @@
 - [x] Task: Set up the main routing structure in `App.tsx` and create empty page components cc308c2
 - [x] Task: Conductor - User Manual Verification 'Architecture & Dependencies' (Protocol in workflow.md) cc308c2
 
-## Phase 2: Sidebar & Global Layout
+## Phase 2: Sidebar & Global Layout [checkpoint: 26adeb8]
 - [x] Task: Write Tests for Sidebar navigation and tooltips 6f62c63
 - [x] Task: Implement the fixed Sidebar component using Lucide icons and Radix UI tooltips 05c379d
 - [x] Task: Apply a global Brutalist layout wrapper (Sidebar + Content area) 05c379d
-- [~] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md) 26adeb8
 
 ## Phase 3: Downloader Page & State Locking
-- [ ] Task: Write Tests for the Downloader page state transitions (input vs. active download)
+- [~] Task: Write Tests for the Downloader page state transitions (input vs. active download)
 - [ ] Task: Refactor Downloader page to use conditional rendering for "Full Hide UI" logic
 - [ ] Task: Implement the "Active Download" focused view
 - [ ] Task: Conductor - User Manual Verification 'Downloader Page & State Locking' (Protocol in workflow.md)
