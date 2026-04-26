@@ -15,10 +15,10 @@
 - [x] Task: Implement POST `/download` endpoint integrating `yt-dlp-exec` 683c3cc
 - [x] Task: Conductor - User Manual Verification 'Local API Bridge (Express Server)' (Protocol in workflow.md) decf12e
 
-## Phase 3: Core Brutalist UI (Renderer & Preload)
+## Phase 3: Core Brutalist UI (Renderer & Preload) [checkpoint: 0960d7d]
 
 - [x] Task: Write Tests for React UI components (URL input, Download Button, Progress Bar) 692687c
 - [x] Task: Implement secure IPC communication in `preload.js` a1ded1e
 - [x] Task: Implement base React UI with Orange/White/Blue Brutalist styling 388530c
 - [x] Task: Connect React UI to `yt-dlp-exec` via IPC for manual local downloads cb63809
-- [ ] Task: Conductor - User Manual Verification 'Core Brutalist UI (Renderer & Preload)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Core Brutalist UI (Renderer & Preload)' (Protocol in workflow.md) 0960d7d
