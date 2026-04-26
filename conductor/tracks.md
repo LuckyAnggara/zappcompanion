@@ -4,7 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [~] **Track: UI Overhaul with Sidebar & Page Routing**
+- [x] **Track: UI Overhaul with Sidebar & Page Routing**
   *Link: [./tracks/ui_overhaul_20260426/](./tracks/ui_overhaul_20260426/)*
 
 - [x] **Track: Enhanced Download Experience & Library View**

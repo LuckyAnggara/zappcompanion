@@ -17,13 +17,13 @@
 - [x] Task: Implement the "Active Download" focused view 72f64e3
 - [x] Task: Conductor - User Manual Verification 'Downloader Page & State Locking' (Protocol in workflow.md) 72f64e3
 
-## Phase 4: Library & Settings Migration
-- [~] Task: Migrate existing Library history logic to the `/library` route
-- [~] Task: Migrate existing storage/settings logic to the `/settings` route
-- [~] Task: Perform final Brutalist styling pass for all pages and navigation active states
-- [ ] Task: Conductor - User Manual Verification 'Library & Settings Migration' (Protocol in workflow.md)
+## Phase 4: Library & Settings Migration [checkpoint: d205710]
+- [x] Task: Migrate existing Library history logic to the `/library` route cc308c2
+- [x] Task: Migrate existing storage/settings logic to the `/settings` route cc308c2
+- [x] Task: Perform final Brutalist styling pass for all pages and navigation active states cc308c2
+- [x] Task: Conductor - User Manual Verification 'Library & Settings Migration' (Protocol in workflow.md) d205710
 
-## Phase 5: Binary Management (yt-dlp Auto-update)
+## Phase 5: Binary Management (yt-dlp Auto-update) [checkpoint: e127dfd]
 - [x] Task: Implement backend logic to check yt-dlp version and availability a97737c
 - [x] Task: Implement auto-update logic using `yt-dlp-exec` a97737c
 - [x] Task: Add "Binary Status" and "Update Now" controls to the Settings page a97737c
