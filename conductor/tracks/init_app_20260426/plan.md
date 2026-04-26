@@ -1,12 +1,14 @@
 # Implementation Plan: Initialize Electron App, Local API Bridge, and Core Brutalist UI
 
 ## Phase 1: Application Scaffolding and Setup
-- [ ] Task: Scaffold Electron + Vite + React app framework
+
+- [~] Task: Scaffold Electron + Vite + React app framework
 - [ ] Task: Install core dependencies (`yt-dlp-exec`, `express`, `cors`)
 - [ ] Task: Configure TypeScript and Vite for the Electron main, preload, and renderer processes
 - [ ] Task: Conductor - User Manual Verification 'Application Scaffolding and Setup' (Protocol in workflow.md)
 
 ## Phase 2: Local API Bridge (Express Server)
+
 - [ ] Task: Write Tests for Express Server (`/ping` and `/download` routes)
 - [ ] Task: Implement Express server in the Main process handling strict CORS
 - [ ] Task: Implement GET `/ping` endpoint
@@ -14,6 +16,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Local API Bridge (Express Server)' (Protocol in workflow.md)
 
 ## Phase 3: Core Brutalist UI (Renderer & Preload)
+
 - [ ] Task: Write Tests for React UI components (URL input, Download Button, Progress Bar)
 - [ ] Task: Implement secure IPC communication in `preload.js`
 - [ ] Task: Implement base React UI with Orange/White/Blue Brutalist styling

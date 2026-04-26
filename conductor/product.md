@@ -71,19 +71,24 @@ Berikan komentar pada bagian penting kode, terutama pada konfigurasi CORS dan ek
 # Product Guide: yt-dlp Companion App
 
 ## Overview
+
 This Electron desktop application acts as a companion "bridge" for a web-based frontend. It leverages `yt-dlp-exec` to securely offload video downloading tasks directly to the user's local machine, reducing server bandwidth and infrastructure costs.
 
 ## Target Audience
+
 **Frontend Users:** The application is designed to be a seamless background bridge for users of the frontend app, making the download process invisible and frictionless while offering robust features when the app UI is opened.
 
 ## UI/UX Flow & Aesthetics
-**Advanced Brutalism:** 
+
+**Advanced Brutalism:**
+
 - The user interface embraces a brutalist design philosophy with bold orange, white, and blue as dominant colors.
 - Features include a download queue, a history list, and an area for detailed logs.
 - The UI contains an input field for video URLs, a download button, and progress indicators showing download status in real-time.
 
 ## Core Features
-1. **Local API (The Bridge):** 
+
+1. **Local API (The Bridge):**
    - Runs a lightweight Express.js HTTP server on a local port (e.g., 4000).
    - Provides an endpoint (`GET /ping`) to check readiness.
    - Provides a download endpoint (`POST /download`) that triggers `yt-dlp-exec` and saves files to the user's 'Downloads' folder.
@@ -95,6 +100,7 @@ This Electron desktop application acts as a companion "bridge" for a web-based f
    - Real-time progress bars, completion status, and error logs are fully visible.
 
 ## Technical Requirements
+
 - **Framework:** Electron.js (Latest Stable)
 - **Local Server:** Express.js or Node.js built-in HTTP module.
 - **Process Management:** `yt-dlp-exec` to handle binary downloads and execution.
