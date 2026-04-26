@@ -11,16 +11,16 @@
 - [x] Task: Apply a global Brutalist layout wrapper (Sidebar + Content area) 05c379d
 - [x] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md) 26adeb8
 
-## Phase 3: Downloader Page & State Locking
+## Phase 3: Downloader Page & State Locking [checkpoint: 72f64e3]
 - [x] Task: Write Tests for the Downloader page state transitions (input vs. active download) bf6e0ad
-- [~] Task: Refactor Downloader page to use conditional rendering for "Full Hide UI" logic
-- [~] Task: Implement the "Active Download" focused view
-- [ ] Task: Conductor - User Manual Verification 'Downloader Page & State Locking' (Protocol in workflow.md)
+- [x] Task: Refactor Downloader page to use conditional rendering for "Full Hide UI" logic 72f64e3
+- [x] Task: Implement the "Active Download" focused view 72f64e3
+- [x] Task: Conductor - User Manual Verification 'Downloader Page & State Locking' (Protocol in workflow.md) 72f64e3
 
 ## Phase 4: Library & Settings Migration
-- [ ] Task: Migrate existing Library history logic to the `/library` route
-- [ ] Task: Migrate existing storage/settings logic to the `/settings` route
-- [ ] Task: Perform final Brutalist styling pass for all pages and navigation active states
+- [~] Task: Migrate existing Library history logic to the `/library` route
+- [~] Task: Migrate existing storage/settings logic to the `/settings` route
+- [~] Task: Perform final Brutalist styling pass for all pages and navigation active states
 - [ ] Task: Conductor - User Manual Verification 'Library & Settings Migration' (Protocol in workflow.md)
 
 ## Phase 5: Binary Management (yt-dlp Auto-update)
