@@ -2,8 +2,8 @@
 
 ## Phase 1: Architecture & Dependencies
 - [x] Task: Install new dependencies (`react-router-dom`, `lucide-react`, `@radix-ui/react-tooltip`) b7a82dc
-- [x] Task: Set up the main routing structure in `App.tsx` and create empty page components f8da5ce
-- [~] Task: Conductor - User Manual Verification 'Architecture & Dependencies' (Protocol in workflow.md)
+- [x] Task: Set up the main routing structure in `App.tsx` and create empty page components cc308c2
+- [x] Task: Conductor - User Manual Verification 'Architecture & Dependencies' (Protocol in workflow.md) cc308c2
 
 ## Phase 2: Sidebar & Global Layout
 - [ ] Task: Write Tests for Sidebar navigation and tooltips
