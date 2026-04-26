@@ -1,0 +1,28 @@
+# Implementation Plan: Enhanced Download Experience & Library View
+
+## Phase 1: Persistence & Settings
+- [ ] Task: Set up local JSON storage (e.g., `electron-store`) for app settings and download history
+- [ ] Task: Implement IPC handlers for managing the default download path and saving/retrieving history
+- [ ] Task: Write Tests for the storage and settings logic
+- [ ] Task: Conductor - User Manual Verification 'Persistence & Settings' (Protocol in workflow.md)
+
+## Phase 2: Metadata Fetching & Bridge API
+- [ ] Task: Implement backend logic to fetch video metadata (Title, Thumbnail, Formats) via `yt-dlp`
+- [ ] Task: Add `GET /metadata` endpoint to the Express Bridge API for web app integration
+- [ ] Task: Create UI components to display metadata preview and a loading state
+- [ ] Task: Write Tests for the metadata fetching logic and the new API endpoint
+- [ ] Task: Conductor - User Manual Verification 'Metadata Fetching & Bridge API' (Protocol in workflow.md)
+
+## Phase 3: Quality Selection & Real-time Progress
+- [ ] Task: Update the download logic to support quality selection (`format_id`) and FFmpeg MP4 muxing
+- [ ] Task: Implement progress parsing to calculate percentage, speed, and ETA from `yt-dlp` output
+- [ ] Task: Build the Quality Selection UI and a detailed progress tracker with percentage
+- [ ] Task: Write Tests for progress parsing and download triggering with format selection
+- [ ] Task: Conductor - User Manual Verification 'Quality Selection & Real-time Progress' (Protocol in workflow.md)
+
+## Phase 4: Library View & File Management
+- [ ] Task: Implement the Library UI section using a Brutalist list style
+- [ ] Task: Add functionality to "Open in Folder" and "Play" (open file) for downloaded items
+- [ ] Task: Ensure the Library persists and updates automatically after each download
+- [ ] Task: Write Tests for the Library UI state and file interaction logic
+- [ ] Task: Conductor - User Manual Verification 'Library View & File Management' (Protocol in workflow.md)
