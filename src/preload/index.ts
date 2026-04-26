@@ -7,7 +7,9 @@ const api = {
   setSettings: (settings: any) => ipcRenderer.invoke('set-settings', settings),
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
   getHistory: () => ipcRenderer.invoke('get-history'),
-  getMetadata: (url: string) => ipcRenderer.invoke('get-metadata', url)
+  getMetadata: (url: string) => ipcRenderer.invoke('get-metadata', url),
+  openFile: (path: string) => ipcRenderer.invoke('open-file', path),
+  showInFolder: (path: string) => ipcRenderer.invoke('show-in-folder', path)
 }
 
 if (process.contextIsolated) {

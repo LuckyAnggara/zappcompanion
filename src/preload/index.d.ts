@@ -9,6 +9,8 @@ declare global {
       selectDirectory: () => Promise<string | null>
       getHistory: () => Promise<any[]>
       getMetadata: (url: string) => Promise<any>
+      openFile: (path: string) => Promise<void>
+      showInFolder: (path: string) => Promise<void>
     }
   }
 }

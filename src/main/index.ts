@@ -88,6 +88,14 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('open-file', async (_event, path: string) => {
+    await shell.openPath(path)
+  })
+
+  ipcMain.handle('show-in-folder', async (_event, path: string) => {
+    shell.showItemInFolder(path)
+  })
+
   // IPC Download Handler
   ipcMain.on('download-video', (event, { url, formatId, metadata }: { url: string; formatId?: string; metadata?: any }) => {
     const settings = store.get('settings')

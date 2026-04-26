@@ -13,15 +13,15 @@
 - [x] Task: Write Tests for the metadata fetching logic and the new API endpoint a718435
 - [x] Task: Conductor - User Manual Verification 'Metadata Fetching & Bridge API' (Protocol in workflow.md) a263d08
 
-## Phase 3: Quality Selection & Real-time Progress
-- [~] Task: Update the download logic to support quality selection (`format_id`) and FFmpeg MP4 muxing
-- [ ] Task: Implement progress parsing to calculate percentage, speed, and ETA from `yt-dlp` output
-- [ ] Task: Build the Quality Selection UI and a detailed progress tracker with percentage
-- [ ] Task: Write Tests for progress parsing and download triggering with format selection
-- [ ] Task: Conductor - User Manual Verification 'Quality Selection & Real-time Progress' (Protocol in workflow.md)
+## Phase 3: Quality Selection & Real-time Progress [checkpoint: de9c828]
+- [x] Task: Update the download logic to support quality selection (`format_id`) and FFmpeg MP4 muxing de9c828
+- [x] Task: Implement progress parsing to calculate percentage, speed, and ETA from `yt-dlp` output de9c828
+- [x] Task: Build the Quality Selection UI and a detailed progress tracker with percentage de9c828
+- [x] Task: Write Tests for progress parsing and download triggering with format selection de9c828
+- [x] Task: Conductor - User Manual Verification 'Quality Selection & Real-time Progress' (Protocol in workflow.md) de9c828
 
 ## Phase 4: Library View & File Management
-- [ ] Task: Implement the Library UI section using a Brutalist list style
+- [~] Task: Implement the Library UI section using a Brutalist list style
 - [ ] Task: Add functionality to "Open in Folder" and "Play" (open file) for downloaded items
 - [ ] Task: Ensure the Library persists and updates automatically after each download
 - [ ] Task: Write Tests for the Library UI state and file interaction logic

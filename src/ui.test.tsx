@@ -25,42 +25,41 @@ window.api = {
   getSettings: vi.fn(async () => ({ downloadPath: '' })),
   setSettings: vi.fn(),
   selectDirectory: vi.fn(),
-  getHistory: vi.fn(async () => [])
+  getHistory: vi.fn(async () => [
+    { id: '1', title: 'Old Video', filePath: '/path/1', date: new Date().toISOString(), status: 'completed' }
+  ]),
+  openFile: vi.fn(),
+  showInFolder: vi.fn()
 }
 
-describe('Brutalist UI components', () => {
+describe('Brutalist UI with Library and Settings', () => {
   beforeEach(() => {
     cleanup()
     vi.clearAllMocks()
   })
 
-  it('renders title, input, and fetch button', () => {
+  it('renders library items from history', async () => {
     render(<App />)
-    expect(screen.getByText(/yt-dlp Bridge/i)).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/Enter video URL/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Fetch/i })).toBeInTheDocument()
-  })
-
-  it('updates input value on change', () => {
-    render(<App />)
-    const input = screen.getByPlaceholderText(/Enter video URL/i) as HTMLInputElement
-    fireEvent.change(input, { target: { value: 'https://youtube.com/test' } })
-    expect(input.value).toBe('https://youtube.com/test')
-  })
-
-  it('fetches metadata and then shows download button', async () => {
-    render(<App />)
-    const input = screen.getByPlaceholderText(/Enter video URL/i)
-    const fetchButton = screen.getByRole('button', { name: /Fetch/i })
-    
-    fireEvent.change(input, { target: { value: 'https://youtube.com/test' } })
-    fireEvent.click(fetchButton)
-    
-    expect(window.api.getMetadata).toHaveBeenCalledWith('https://youtube.com/test')
-    
     await waitFor(() => {
-      expect(screen.getByText(/Test Video/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Download Selected/i })).toBeInTheDocument()
+      expect(screen.getByText(/Old Video/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Play/i })).toBeInTheDocument()
     })
+  })
+
+  it('toggles settings section', () => {
+    render(<App />)
+    const toggle = screen.getByRole('button', { name: /Settings/i })
+    fireEvent.click(toggle)
+    expect(screen.getByText(/Download Location:/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Close Settings/i }))
+    expect(screen.queryByText(/Download Location:/i)).not.toBeInTheDocument()
+  })
+
+  it('calls directory selector when changing path', async () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /Settings/i }))
+    const changeBtn = screen.getByRole('button', { name: /Change/i })
+    fireEvent.click(changeBtn)
+    expect(window.api.selectDirectory).toHaveBeenCalled()
   })
 })
