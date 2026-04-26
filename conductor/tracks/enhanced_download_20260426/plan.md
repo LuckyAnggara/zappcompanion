@@ -1,7 +1,7 @@
 # Implementation Plan: Enhanced Download Experience & Library View
 
 ## Phase 1: Persistence & Settings
-- [ ] Task: Set up local JSON storage (e.g., `electron-store`) for app settings and download history
+- [~] Task: Set up local JSON storage (e.g., `electron-store`) for app settings and download history
 - [ ] Task: Implement IPC handlers for managing the default download path and saving/retrieving history
 - [ ] Task: Write Tests for the storage and settings logic
 - [ ] Task: Conductor - User Manual Verification 'Persistence & Settings' (Protocol in workflow.md)

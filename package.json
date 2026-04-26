@@ -19,6 +19,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "cors": "^2.8.6",
+    "electron-store": "^11.0.2",
     "express": "^5.2.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
