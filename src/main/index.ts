@@ -1,7 +1,8 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import bridgeApp from './bridge'
+import ytDlp from 'yt-dlp-exec'
 
 const BRIDGE_PORT = 4000
 
@@ -43,6 +44,24 @@ app.whenReady().then(() => {
   // Start Express Bridge
   bridgeApp.listen(BRIDGE_PORT, () => {
     console.log(`Bridge server listening on port ${BRIDGE_PORT}`)
+  })
+
+  // IPC Download Handler
+  ipcMain.on('download-video', (event, url: string) => {
+    const downloadPath = app.getPath('downloads')
+
+    ytDlp(url, {
+      output: join(downloadPath, '%(title)s.%(ext)s'),
+      noCheckCertificates: true,
+      noWarnings: true,
+      addHeader: ['referer:youtube.com', 'user-agent:googlebot']
+    })
+      .then(() => {
+        event.reply('download-complete', { status: 'success', url })
+      })
+      .catch(err => {
+        event.reply('download-error', { status: 'error', message: err.message, url })
+      })
   })
 
   createWindow()
