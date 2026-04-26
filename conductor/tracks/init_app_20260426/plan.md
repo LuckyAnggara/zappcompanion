@@ -20,5 +20,5 @@
 - [x] Task: Write Tests for React UI components (URL input, Download Button, Progress Bar) 692687c
 - [x] Task: Implement secure IPC communication in `preload.js` a1ded1e
 - [x] Task: Implement base React UI with Orange/White/Blue Brutalist styling 388530c
-- [~] Task: Connect React UI to `yt-dlp-exec` via IPC for manual local downloads
+- [x] Task: Connect React UI to `yt-dlp-exec` via IPC for manual local downloads cb63809
 - [ ] Task: Conductor - User Manual Verification 'Core Brutalist UI (Renderer & Preload)' (Protocol in workflow.md)

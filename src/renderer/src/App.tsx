@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react'
 
 function App(): React.JSX.Element {
+  console.log('App rendering...')
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState('Ready to bridge.')
   const [logs, setLogs] = useState<string[]>([])
 
   useEffect(() => {
+    if (!window.electron) {
+      setStatus('Error: window.electron is undefined. Check preload script.')
+      return
+    }
+
     const handleComplete = (_event, arg): void => {
       setStatus(`Success: Downloaded ${arg.url}`)
       setLogs(prev => [...prev, `[SUCCESS] ${arg.url}`])
