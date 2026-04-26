@@ -57,9 +57,3 @@ app.post('/download', async (req, res) => {
 })
 
 export default app
-
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Bridge server listening on port ${PORT}`)
-  })
-}

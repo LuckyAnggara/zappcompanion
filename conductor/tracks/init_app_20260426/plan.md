@@ -10,9 +10,9 @@
 ## Phase 2: Local API Bridge (Express Server)
 
 - [x] Task: Write Tests for Express Server (`/ping` and `/download` routes) de05ebb
-- [~] Task: Implement Express server in the Main process handling strict CORS
-- [ ] Task: Implement GET `/ping` endpoint
-- [ ] Task: Implement POST `/download` endpoint integrating `yt-dlp-exec`
+- [x] Task: Implement Express server in the Main process handling strict CORS 683c3cc
+- [x] Task: Implement GET `/ping` endpoint 683c3cc
+- [x] Task: Implement POST `/download` endpoint integrating `yt-dlp-exec` 683c3cc
 - [ ] Task: Conductor - User Manual Verification 'Local API Bridge (Express Server)' (Protocol in workflow.md)
 
 ## Phase 3: Core Brutalist UI (Renderer & Preload)
