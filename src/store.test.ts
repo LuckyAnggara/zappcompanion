@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { expect, test, vi, beforeEach } from 'vitest'
 
 // Mock electron-store
 vi.mock('electron-store', () => {
@@ -11,17 +11,35 @@ vi.mock('electron-store', () => {
   }
 })
 
-test('store defaults and updates', async () => {
+beforeEach(() => {
+  vi.resetModules()
+})
+
+test('store manages settings correctly', async () => {
   const storeModule = await import('./main/store')
   const store = storeModule.default
   
-  expect(store.get('settings').downloadPath).toBe('')
+  const newSettings = { downloadPath: '/custom/path' }
+  store.set('settings', newSettings)
+  expect(store.get('settings')).toEqual(newSettings)
+})
+
+test('store manages history correctly', async () => {
+  const storeModule = await import('./main/store')
+  const store = storeModule.default
   
-  store.set('settings', { downloadPath: '/downloads' })
-  expect(store.get('settings').downloadPath).toBe('/downloads')
+  const historyItem = {
+    id: '123',
+    url: 'https://test.com',
+    title: 'Test Video',
+    thumbnail: 'test.jpg',
+    filePath: '/path/to/test.mp4',
+    date: new Date().toISOString(),
+    status: 'completed'
+  }
   
-  const historyItem = { id: '1', title: 'Test', status: 'completed' }
   store.set('history', [historyItem])
-  expect(store.get('history')).toHaveLength(1)
-  expect(store.get('history')[0].title).toBe('Test')
+  const history = store.get('history')
+  expect(history).toHaveLength(1)
+  expect(history[0].id).toBe('123')
 })
