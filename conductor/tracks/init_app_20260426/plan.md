@@ -3,8 +3,8 @@
 ## Phase 1: Application Scaffolding and Setup
 
 - [x] Task: Scaffold Electron + Vite + React app framework 838bdbe
-- [~] Task: Install core dependencies (`yt-dlp-exec`, `express`, `cors`)
-- [ ] Task: Configure TypeScript and Vite for the Electron main, preload, and renderer processes
+- [x] Task: Install core dependencies (`yt-dlp-exec`, `express`, `cors`) a668bba
+- [~] Task: Configure TypeScript and Vite for the Electron main, preload, and renderer processes
 - [ ] Task: Conductor - User Manual Verification 'Application Scaffolding and Setup' (Protocol in workflow.md)
 
 ## Phase 2: Local API Bridge (Express Server)
