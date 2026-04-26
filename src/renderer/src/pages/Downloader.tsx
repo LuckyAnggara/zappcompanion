@@ -15,6 +15,7 @@ export default function DownloaderPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
   const [selectedFormat, setSelectedFormat] = useState('best')
+  const [activeDownloadMeta, setActiveDownloadMeta] = useState<any>(null)
 
   const isDownloading = progress !== null
 
@@ -25,12 +26,14 @@ export default function DownloaderPage(): React.JSX.Element {
       setStatus(`Success: Downloaded ${arg.url}`)
       setLogs(prev => [...prev, `[SUCCESS] ${arg.url}`])
       setProgress(null)
+      setActiveDownloadMeta(null)
     }
 
     const handleError = (_event, arg): void => {
       setStatus(`Error: ${arg.message}`)
       setLogs(prev => [...prev, `[ERROR] ${arg.url}: ${arg.message}`])
       setProgress(null)
+      setActiveDownloadMeta(null)
     }
 
     const handleProgress = (_event, arg): void => {
@@ -42,7 +45,7 @@ export default function DownloaderPage(): React.JSX.Element {
     window.electron.ipcRenderer.on('download-progress', handleProgress)
 
     return () => {
-      // Cleanup
+      // In a real app we'd remove listeners
     }
   }, [])
 
@@ -67,14 +70,19 @@ export default function DownloaderPage(): React.JSX.Element {
 
   const handleDownload = (): void => {
     if (url) {
+      const meta = { title: metadata?.title, thumbnail: metadata?.thumbnail }
+      setActiveDownloadMeta(meta)
       setStatus(`Starting download for: ${url}`)
       setLogs(prev => [...prev, `[INFO] Requesting ${url} (Format: ${selectedFormat})`])
+      
       window.electron.ipcRenderer.send('download-video', { 
         url, 
         formatId: selectedFormat,
-        metadata: { title: metadata?.title, thumbnail: metadata?.thumbnail }
+        metadata: meta
       })
-      // setMetadata(null) // Hide metadata during download
+      
+      setMetadata(null)
+      setUrl('')
     }
   }
 
@@ -105,7 +113,7 @@ export default function DownloaderPage(): React.JSX.Element {
           </div>
           
           {metadata && (
-            <div className="metadata-preview">
+            <div className="metadata-preview scale-in">
               <div className="preview-content">
                 <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail" />
                 <div className="details">
@@ -135,29 +143,34 @@ export default function DownloaderPage(): React.JSX.Element {
               </div>
             </div>
           )}
+
+          <div className="status-banner">
+            {status}
+          </div>
         </div>
       ) : (
-        <div className="active-download-card metadata-preview">
-          <div className="preview-content">
-            {metadata?.thumbnail && <img src={metadata.thumbnail} alt="Thumb" className="thumbnail" />}
-            <div className="details">
-              <h3>Downloading: {metadata?.title || 'Video'}</h3>
-              <p>Please wait until the process is complete.</p>
-              <div className="status-banner">
-                {status}
-                <div className="progress-container">
-                  <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-                  <span className="progress-text">{progress}%</span>
+        <div className="active-download-card">
+          <div className="active-content">
+            <div className="active-header">
+               <div className="spinner"></div>
+               <h3>Active Download</h3>
+            </div>
+            <div className="active-body">
+              {activeDownloadMeta?.thumbnail && (
+                <img src={activeDownloadMeta.thumbnail} alt="Thumb" className="active-thumb" />
+              )}
+              <div className="active-details">
+                <div className="active-title">{activeDownloadMeta?.title || 'Processing...'}</div>
+                <div className="status-text">{status}</div>
+                <div className="progress-wrapper">
+                  <div className="progress-container">
+                    <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+                    <span className="progress-text">{progress}%</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {!isDownloading && (
-        <div className="status-banner">
-          {status}
         </div>
       )}
 
@@ -170,6 +183,101 @@ export default function DownloaderPage(): React.JSX.Element {
           ))}
         </div>
       </div>
+
+      <style>{`
+        .downloader-page {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .scale-in {
+          animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Active Download View */
+        .active-download-card {
+          border: 6px solid var(--black);
+          background-color: var(--black);
+          color: var(--white);
+          box-shadow: 15px 15px 0px var(--orange);
+          margin-bottom: 30px;
+          overflow: hidden;
+        }
+
+        .active-header {
+          background-color: var(--orange);
+          padding: 15px;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          border-bottom: 6px solid var(--black);
+        }
+
+        .active-header h3 {
+          margin: 0;
+          text-transform: uppercase;
+          font-size: 1.5rem;
+          color: var(--white);
+          -webkit-text-stroke: 1px var(--black);
+        }
+
+        .active-body {
+          padding: 20px;
+          display: flex;
+          gap: 25px;
+          background-color: var(--white);
+          color: var(--black);
+        }
+
+        .active-thumb {
+          width: 200px;
+          border: 4px solid var(--black);
+        }
+
+        .active-details {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .active-title {
+          font-size: 1.4rem;
+          font-weight: 900;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+        }
+
+        .status-text {
+          font-weight: bold;
+          color: var(--blue);
+          margin-bottom: 15px;
+          text-transform: uppercase;
+        }
+
+        .progress-wrapper {
+          width: 100%;
+        }
+
+        .spinner {
+          width: 30px;
+          height: 30px;
+          border: 4px solid var(--white);
+          border-top-color: var(--black);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }

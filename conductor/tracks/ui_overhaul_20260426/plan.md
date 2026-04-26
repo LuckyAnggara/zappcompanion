@@ -12,9 +12,9 @@
 - [x] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md) 26adeb8
 
 ## Phase 3: Downloader Page & State Locking
-- [~] Task: Write Tests for the Downloader page state transitions (input vs. active download)
-- [ ] Task: Refactor Downloader page to use conditional rendering for "Full Hide UI" logic
-- [ ] Task: Implement the "Active Download" focused view
+- [x] Task: Write Tests for the Downloader page state transitions (input vs. active download) bf6e0ad
+- [~] Task: Refactor Downloader page to use conditional rendering for "Full Hide UI" logic
+- [~] Task: Implement the "Active Download" focused view
 - [ ] Task: Conductor - User Manual Verification 'Downloader Page & State Locking' (Protocol in workflow.md)
 
 ## Phase 4: Library & Settings Migration
