@@ -1,9 +1,30 @@
 import React from 'react'
 import { HashRouter as Router, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import { Download, Library, Settings } from 'lucide-react'
+import * as Tooltip from '@radix-ui/react-tooltip'
 import DownloaderPage from './pages/Downloader'
 import LibraryPage from './pages/Library'
 import SettingsPage from './pages/Settings'
+
+function NavItem({ to, icon: Icon, label }: { to: string; icon: any; label: string }): React.JSX.Element {
+  return (
+    <Tooltip.Provider delayDuration={200}>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>
+          <NavLink to={to} aria-label={label} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Icon size={32} />
+          </NavLink>
+        </Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Content className="tooltip-content" side="right" sideOffset={10}>
+            {label}
+            <Tooltip.Arrow className="tooltip-arrow" />
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  )
+}
 
 function App(): React.JSX.Element {
   return (
@@ -14,18 +35,9 @@ function App(): React.JSX.Element {
             <div className="logo-box">YT</div>
           </header>
           <nav className="nav-menu">
-            <NavLink to="/downloader" aria-label="Downloader" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <Download size={32} />
-              <span className="tooltip">Downloader</span>
-            </NavLink>
-            <NavLink to="/library" aria-label="Library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <Library size={32} />
-              <span className="tooltip">Library</span>
-            </NavLink>
-            <NavLink to="/settings" aria-label="Settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <Settings size={32} />
-              <span className="tooltip">Settings</span>
-            </NavLink>
+            <NavItem to="/downloader" icon={Download} label="Downloader" />
+            <NavItem to="/library" icon={Library} label="Library" />
+            <NavItem to="/settings" icon={Settings} label="Settings" />
           </nav>
         </aside>
         
@@ -114,6 +126,9 @@ function App(): React.JSX.Element {
           border: 4px solid transparent;
           transition: all 0.1s;
           position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .nav-item:hover {
@@ -129,27 +144,24 @@ function App(): React.JSX.Element {
           box-shadow: -6px 6px 0px var(--white);
         }
 
-        .nav-item .tooltip {
-          position: absolute;
-          left: 110%;
-          top: 50%;
-          transform: translateY(-50%);
+        .tooltip-content {
           background-color: var(--black);
           color: var(--white);
-          padding: 5px 10px;
-          font-weight: bold;
+          padding: 8px 12px;
+          font-weight: 900;
           text-transform: uppercase;
-          border: 2px solid var(--white);
-          white-space: nowrap;
-          visibility: hidden;
-          opacity: 0;
-          transition: opacity 0.2s;
-          pointer-events: none;
+          border: 3px solid var(--white);
+          font-family: inherit;
+          box-shadow: 4px 4px 0px var(--orange);
+          user-select: none;
+          animation-duration: 400ms;
+          animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity;
+          z-index: 1000;
         }
 
-        .nav-item:hover .tooltip {
-          visibility: visible;
-          opacity: 1;
+        .tooltip-arrow {
+          fill: var(--white);
         }
 
         .content {
@@ -220,42 +232,9 @@ function App(): React.JSX.Element {
           background-color: var(--black);
         }
 
-        .status-banner {
-          background-color: var(--black);
-          color: var(--orange);
-          padding: 20px;
-          font-weight: 900;
-          font-size: 1.2rem;
-          text-transform: uppercase;
-          border-left: 20px solid var(--blue);
-          margin-bottom: 30px;
-          box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
-        }
-
-        .progress-container {
-          margin-top: 15px;
-          height: 40px;
-          background-color: #333;
-          border: 3px solid var(--white);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .progress-bar {
-          height: 100%;
-          background-color: var(--orange);
-          transition: width 0.3s;
-        }
-
-        .progress-text {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          color: var(--white);
-          font-size: 1.2rem;
-          font-weight: bold;
-          text-shadow: 2px 2px 0px var(--black);
+        .brutalist-button:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
         }
 
         .metadata-preview {
@@ -298,6 +277,44 @@ function App(): React.JSX.Element {
           background: var(--white);
         }
 
+        .status-banner {
+          background-color: var(--black);
+          color: var(--orange);
+          padding: 20px;
+          font-weight: 900;
+          font-size: 1.2rem;
+          text-transform: uppercase;
+          border-left: 20px solid var(--blue);
+          margin-bottom: 30px;
+          box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+        }
+
+        .progress-container {
+          margin-top: 15px;
+          height: 40px;
+          background-color: #333;
+          border: 3px solid var(--white);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .progress-bar {
+          height: 100%;
+          background-color: var(--orange);
+          transition: width 0.3s;
+        }
+
+        .progress-text {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: var(--white);
+          font-size: 1.2rem;
+          font-weight: bold;
+          text-shadow: 2px 2px 0px var(--black);
+        }
+
         .log-area {
           border: var(--border-thick) solid var(--black);
           background-color: var(--gray);
@@ -313,7 +330,7 @@ function App(): React.JSX.Element {
 
         .log-content {
           padding: 15px;
-          max-height: 200px;
+          max-height: 150px;
           overflow-y: auto;
           font-size: 1rem;
         }
@@ -322,6 +339,16 @@ function App(): React.JSX.Element {
           margin-bottom: 8px;
           border-bottom: 2px solid #ccc;
           padding-bottom: 4px;
+        }
+
+        .empty-log {
+          color: #888;
+          font-style: italic;
+        }
+
+        .download-btn {
+          margin-top: 10px;
+          width: 100%;
         }
 
         /* Library styles */

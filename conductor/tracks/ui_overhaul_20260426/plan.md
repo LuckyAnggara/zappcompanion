@@ -6,8 +6,8 @@
 - [x] Task: Conductor - User Manual Verification 'Architecture & Dependencies' (Protocol in workflow.md) cc308c2
 
 ## Phase 2: Sidebar & Global Layout
-- [~] Task: Write Tests for Sidebar navigation and tooltips
-- [ ] Task: Implement the fixed Sidebar component using Lucide icons and Radix UI tooltips
+- [x] Task: Write Tests for Sidebar navigation and tooltips 6f62c63
+- [~] Task: Implement the fixed Sidebar component using Lucide icons and Radix UI tooltips
 - [ ] Task: Apply a global Brutalist layout wrapper (Sidebar + Content area)
 - [ ] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md)
 
