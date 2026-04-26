@@ -2,8 +2,8 @@
 
 ## Phase 1: Persistence & Settings
 - [x] Task: Set up local JSON storage (e.g., `electron-store`) for app settings and download history f56fff2
-- [~] Task: Implement IPC handlers for managing the default download path and saving/retrieving history
-- [ ] Task: Write Tests for the storage and settings logic
+- [x] Task: Implement IPC handlers for managing the default download path and saving/retrieving history 11f8d8b
+- [x] Task: Write Tests for the storage and settings logic 3fdfc45
 - [ ] Task: Conductor - User Manual Verification 'Persistence & Settings' (Protocol in workflow.md)
 
 ## Phase 2: Metadata Fetching & Bridge API
