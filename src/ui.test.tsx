@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
 import React from 'react'
 import App from './renderer/src/App'
 import '@testing-library/jest-dom/vitest'
 
-// Mock Electron IPC
+// Mock Electron IPC & API
 // @ts-expect-error - mock window
 window.electron = {
   ipcRenderer: {
@@ -13,17 +13,31 @@ window.electron = {
   }
 }
 
+// @ts-expect-error - mock window
+window.api = {
+  getMetadata: vi.fn(async () => ({
+    title: 'Test Video',
+    thumbnail: 'test.jpg',
+    uploader: 'Test Creator',
+    formats: []
+  })),
+  getSettings: vi.fn(async () => ({ downloadPath: '' })),
+  setSettings: vi.fn(),
+  selectDirectory: vi.fn(),
+  getHistory: vi.fn(async () => [])
+}
+
 describe('Brutalist UI components', () => {
   beforeEach(() => {
     cleanup()
     vi.clearAllMocks()
   })
 
-  it('renders title, input, and download button', () => {
+  it('renders title, input, and fetch button', () => {
     render(<App />)
     expect(screen.getByText(/yt-dlp Bridge/i)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/Enter video URL/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Download/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Fetch/i })).toBeInTheDocument()
   })
 
   it('updates input value on change', () => {
@@ -33,14 +47,19 @@ describe('Brutalist UI components', () => {
     expect(input.value).toBe('https://youtube.com/test')
   })
 
-  it('triggers download on button click', () => {
+  it('fetches metadata and then shows download button', async () => {
     render(<App />)
     const input = screen.getByPlaceholderText(/Enter video URL/i)
-    const button = screen.getByRole('button', { name: /Download/i })
+    const fetchButton = screen.getByRole('button', { name: /Fetch/i })
     
     fireEvent.change(input, { target: { value: 'https://youtube.com/test' } })
-    fireEvent.click(button)
+    fireEvent.click(fetchButton)
     
-    expect(window.electron.ipcRenderer.send).toHaveBeenCalledWith('download-video', 'https://youtube.com/test')
+    expect(window.api.getMetadata).toHaveBeenCalledWith('https://youtube.com/test')
+    
+    await waitFor(() => {
+      expect(screen.getByText(/Test Video/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Download Best Quality/i })).toBeInTheDocument()
+    })
   })
 })

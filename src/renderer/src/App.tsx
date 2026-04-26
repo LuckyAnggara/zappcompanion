@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react'
 
+interface Metadata {
+  title: string
+  thumbnail: string
+  uploader: string
+  formats: any[]
+}
+
 function App(): React.JSX.Element {
-  console.log('App rendering...')
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState('Ready to bridge.')
   const [logs, setLogs] = useState<string[]>([])
+  const [metadata, setMetadata] = useState<Metadata | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!window.electron) {
@@ -26,9 +34,26 @@ function App(): React.JSX.Element {
     window.electron.ipcRenderer.on('download-error', handleError)
 
     return () => {
-      // Note: In real app we might need to remove specific listeners if electronAPI supports it
+      // Cleanup listeners if needed
     }
   }, [])
+
+  const handleFetchMetadata = async (): Promise<void> => {
+    if (!url) return
+    setLoading(true)
+    setStatus(`Fetching metadata for: ${url}`)
+    try {
+      const data = await window.api.getMetadata(url)
+      setMetadata(data)
+      setStatus('Metadata loaded. Choose quality and download.')
+      setLogs(prev => [...prev, `[INFO] Metadata loaded for ${url}`])
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`)
+      setLogs(prev => [...prev, `[ERROR] Failed to fetch metadata: ${err.message}`])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleDownload = (): void => {
     if (url) {
@@ -36,6 +61,7 @@ function App(): React.JSX.Element {
       setLogs(prev => [...prev, `[INFO] Requesting ${url}`])
       window.electron.ipcRenderer.send('download-video', url)
       setUrl('')
+      setMetadata(null)
     }
   }
 
@@ -54,11 +80,30 @@ function App(): React.JSX.Element {
             onChange={(e) => setUrl(e.target.value)}
             className="brutalist-input"
           />
-          <button onClick={handleDownload} className="brutalist-button">
-            Download
+          <button 
+            onClick={handleFetchMetadata} 
+            className="brutalist-button"
+            disabled={loading}
+          >
+            {loading ? '...' : 'Fetch'}
           </button>
         </div>
         
+        {metadata && (
+          <div className="metadata-preview">
+            <div className="preview-content">
+              <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail" />
+              <div className="details">
+                <h2>{metadata.title}</h2>
+                <p>By: {metadata.uploader}</p>
+                <button onClick={handleDownload} className="brutalist-button download-btn">
+                  Download Best Quality
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="status-banner">
           {status}
         </div>
@@ -147,12 +192,46 @@ function App(): React.JSX.Element {
           transition: background-color 0.1s;
         }
 
-        .brutalist-button:hover {
+        .brutalist-button:hover:not(:disabled) {
           background-color: #1976d2;
         }
 
-        .brutalist-button:active {
+        .brutalist-button:active:not(:disabled) {
           background-color: var(--black);
+        }
+
+        .brutalist-button:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+
+        .metadata-preview {
+          border: 4px solid var(--black);
+          margin-bottom: 20px;
+          padding: 15px;
+          background-color: #fff;
+        }
+
+        .preview-content {
+          display: flex;
+          gap: 20px;
+        }
+
+        .thumbnail {
+          width: 200px;
+          height: auto;
+          border: 4px solid var(--black);
+        }
+
+        .details h2 {
+          margin: 0 0 10px 0;
+          font-size: 1.5rem;
+          text-transform: uppercase;
+        }
+
+        .download-btn {
+          margin-top: 10px;
+          width: 100%;
         }
 
         .status-banner {

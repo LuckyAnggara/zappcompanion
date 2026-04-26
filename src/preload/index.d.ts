@@ -8,6 +8,7 @@ declare global {
       setSettings: (settings: any) => Promise<boolean>
       selectDirectory: () => Promise<string | null>
       getHistory: () => Promise<any[]>
+      getMetadata: (url: string) => Promise<any>
     }
   }
 }

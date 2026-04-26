@@ -6,7 +6,8 @@ const api = {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSettings: (settings: any) => ipcRenderer.invoke('set-settings', settings),
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
-  getHistory: () => ipcRenderer.invoke('get-history')
+  getHistory: () => ipcRenderer.invoke('get-history'),
+  getMetadata: (url: string) => ipcRenderer.invoke('get-metadata', url)
 }
 
 if (process.contextIsolated) {

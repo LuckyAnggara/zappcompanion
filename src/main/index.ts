@@ -73,6 +73,21 @@ app.whenReady().then(() => {
     return store.get('history')
   })
 
+  // Metadata IPC
+  ipcMain.handle('get-metadata', async (_event, url: string) => {
+    try {
+      const metadata = await ytDlp(url, {
+        dumpJson: true,
+        noCheckCertificates: true,
+        noWarnings: true,
+        addHeader: ['referer:youtube.com', 'user-agent:googlebot']
+      })
+      return metadata
+    } catch (err: any) {
+      throw new Error(err.message)
+    }
+  })
+
   // IPC Download Handler
   ipcMain.on('download-video', (event, url: string) => {
     const settings = store.get('settings')

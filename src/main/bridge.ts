@@ -32,6 +32,26 @@ app.get('/ping', (_req, res) => {
   res.json({ status: 'ok' })
 })
 
+app.get('/metadata', async (req, res) => {
+  const { url } = req.query as { url: string }
+
+  if (!url || !url.startsWith('http')) {
+    return res.status(400).json({ error: 'Invalid URL' })
+  }
+
+  try {
+    const metadata = await ytDlp(url, {
+      dumpJson: true,
+      noCheckCertificates: true,
+      noWarnings: true,
+      addHeader: ['referer:youtube.com', 'user-agent:googlebot']
+    })
+    res.json(metadata)
+  } catch (err: any) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 app.post('/download', async (req, res) => {
   const { url } = req.body
 
