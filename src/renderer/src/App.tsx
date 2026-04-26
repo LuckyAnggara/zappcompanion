@@ -14,15 +14,15 @@ function App(): React.JSX.Element {
             <div className="logo-box">YT</div>
           </header>
           <nav className="nav-menu">
-            <NavLink to="/downloader" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/downloader" aria-label="Downloader" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <Download size={32} />
               <span className="tooltip">Downloader</span>
             </NavLink>
-            <NavLink to="/library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/library" aria-label="Library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <Library size={32} />
               <span className="tooltip">Library</span>
             </NavLink>
-            <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/settings" aria-label="Settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <Settings size={32} />
               <span className="tooltip">Settings</span>
             </NavLink>

@@ -1,12 +1,12 @@
 # Implementation Plan: UI Overhaul with Sidebar & Page Routing
 
-## Phase 1: Architecture & Dependencies
+## Phase 1: Architecture & Dependencies [checkpoint: 7cb8b6c]
 - [x] Task: Install new dependencies (`react-router-dom`, `lucide-react`, `@radix-ui/react-tooltip`) b7a82dc
 - [x] Task: Set up the main routing structure in `App.tsx` and create empty page components cc308c2
 - [x] Task: Conductor - User Manual Verification 'Architecture & Dependencies' (Protocol in workflow.md) cc308c2
 
 ## Phase 2: Sidebar & Global Layout
-- [ ] Task: Write Tests for Sidebar navigation and tooltips
+- [~] Task: Write Tests for Sidebar navigation and tooltips
 - [ ] Task: Implement the fixed Sidebar component using Lucide icons and Radix UI tooltips
 - [ ] Task: Apply a global Brutalist layout wrapper (Sidebar + Content area)
 - [ ] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md)
