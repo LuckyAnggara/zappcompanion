@@ -7,16 +7,6 @@ interface Metadata {
   formats: any[]
 }
 
-interface DownloadItem {
-  id: string
-  url: string
-  title: string
-  thumbnail: string
-  filePath: string
-  date: string
-  status: 'completed' | 'failed'
-}
-
 export default function DownloaderPage(): React.JSX.Element {
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState('Ready to bridge.')
@@ -25,6 +15,8 @@ export default function DownloaderPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
   const [selectedFormat, setSelectedFormat] = useState('best')
+
+  const isDownloading = progress !== null
 
   useEffect(() => {
     if (!window.electron) return
@@ -50,7 +42,7 @@ export default function DownloaderPage(): React.JSX.Element {
     window.electron.ipcRenderer.on('download-progress', handleProgress)
 
     return () => {
-      // In a real app we'd remove listeners
+      // Cleanup
     }
   }, [])
 
@@ -82,8 +74,7 @@ export default function DownloaderPage(): React.JSX.Element {
         formatId: selectedFormat,
         metadata: { title: metadata?.title, thumbnail: metadata?.thumbnail }
       })
-      setMetadata(null)
-      setUrl('')
+      // setMetadata(null) // Hide metadata during download
     }
   }
 
@@ -95,59 +86,80 @@ export default function DownloaderPage(): React.JSX.Element {
     : []
 
   return (
-    <section className="download-section">
-      <div className="input-group">
-        <input
-          type="text"
-          placeholder="Enter video URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="brutalist-input"
-        />
-        <button onClick={handleFetchMetadata} className="brutalist-button" disabled={loading}>
-          {loading ? '...' : 'Fetch'}
-        </button>
-      </div>
-      
-      {metadata && (
-        <div className="metadata-preview">
-          <div className="preview-content">
-            <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail" />
-            <div className="details">
-              <h2>{metadata.title}</h2>
-              <p>By: {metadata.uploader}</p>
-              <div className="quality-selector">
-                <label>Select Quality:</label>
-                <select 
-                  value={selectedFormat} 
-                  onChange={(e) => setSelectedFormat(e.target.value)}
-                  className="brutalist-select"
-                >
-                  <option value="best">Best Quality (Auto)</option>
-                  {availableFormats.map((f) => (
-                    <option key={f.format_id} value={f.format_id}>
-                      {f.resolution} ({f.ext})
-                    </option>
-                  ))}
-                </select>
+    <div className="downloader-page">
+      <h2>Downloader</h2>
+
+      {!isDownloading ? (
+        <div className="downloader-form">
+          <div className="input-group">
+            <input
+              type="text"
+              placeholder="Enter video URL"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="brutalist-input"
+            />
+            <button onClick={handleFetchMetadata} className="brutalist-button" disabled={loading}>
+              {loading ? '...' : 'Fetch'}
+            </button>
+          </div>
+          
+          {metadata && (
+            <div className="metadata-preview">
+              <div className="preview-content">
+                <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail" />
+                <div className="details">
+                  <h3>{metadata.title}</h3>
+                  <p>Uploader: {metadata.uploader}</p>
+                  
+                  <div className="quality-selector">
+                    <label>Select Resolution:</label>
+                    <select 
+                      value={selectedFormat} 
+                      onChange={(e) => setSelectedFormat(e.target.value)}
+                      className="brutalist-select"
+                    >
+                      <option value="best">Best Quality (Auto)</option>
+                      {availableFormats.map((f) => (
+                        <option key={f.format_id} value={f.format_id}>
+                          {f.resolution} ({f.ext})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button onClick={handleDownload} className="brutalist-button download-btn">
+                    Start Download
+                  </button>
+                </div>
               </div>
-              <button onClick={handleDownload} className="brutalist-button download-btn">
-                Download Selected
-              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="active-download-card metadata-preview">
+          <div className="preview-content">
+            {metadata?.thumbnail && <img src={metadata.thumbnail} alt="Thumb" className="thumbnail" />}
+            <div className="details">
+              <h3>Downloading: {metadata?.title || 'Video'}</h3>
+              <p>Please wait until the process is complete.</p>
+              <div className="status-banner">
+                {status}
+                <div className="progress-container">
+                  <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+                  <span className="progress-text">{progress}%</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="status-banner">
-        {status}
-        {progress !== null && (
-          <div className="progress-container">
-            <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-            <span className="progress-text">{progress}%</span>
-          </div>
-        )}
-      </div>
+      {!isDownloading && (
+        <div className="status-banner">
+          {status}
+        </div>
+      )}
 
       <div className="log-area">
         <h3>Activity Log</h3>
@@ -158,6 +170,6 @@ export default function DownloaderPage(): React.JSX.Element {
           ))}
         </div>
       </div>
-    </section>
+    </div>
   )
 }
