@@ -7,9 +7,9 @@
 
 ## Phase 2: Sidebar & Global Layout
 - [x] Task: Write Tests for Sidebar navigation and tooltips 6f62c63
-- [~] Task: Implement the fixed Sidebar component using Lucide icons and Radix UI tooltips
-- [ ] Task: Apply a global Brutalist layout wrapper (Sidebar + Content area)
-- [ ] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md)
+- [x] Task: Implement the fixed Sidebar component using Lucide icons and Radix UI tooltips 05c379d
+- [x] Task: Apply a global Brutalist layout wrapper (Sidebar + Content area) 05c379d
+- [~] Task: Conductor - User Manual Verification 'Sidebar & Global Layout' (Protocol in workflow.md)
 
 ## Phase 3: Downloader Page & State Locking
 - [ ] Task: Write Tests for the Downloader page state transitions (input vs. active download)
@@ -22,3 +22,9 @@
 - [ ] Task: Migrate existing storage/settings logic to the `/settings` route
 - [ ] Task: Perform final Brutalist styling pass for all pages and navigation active states
 - [ ] Task: Conductor - User Manual Verification 'Library & Settings Migration' (Protocol in workflow.md)
+
+## Phase 5: Binary Management (yt-dlp Auto-update)
+- [ ] Task: Implement backend logic to check yt-dlp version and availability
+- [ ] Task: Implement auto-update logic using `yt-dlp-exec`
+- [ ] Task: Add "Binary Status" and "Update Now" controls to the Settings page
+- [ ] Task: Conductor - User Manual Verification 'Binary Management' (Protocol in workflow.md)

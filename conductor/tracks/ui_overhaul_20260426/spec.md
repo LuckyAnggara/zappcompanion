@@ -21,7 +21,12 @@ This track transforms the application from a single-page layout into a multi-pag
    - Replace the form with a focused "Active Download" card showing the progress bar, thumbnail, and cancel/stop options.
    - Ensure the user cannot trigger a second download until the current one finishes or fails.
 
-4. **Brutalist Component Refresh**
+4. **Binary Management (yt-dlp Auto-update)**
+   - Implement a startup check to verify the presence and version of the `yt-dlp` binary.
+   - Add an automatic update check on application launch.
+   - Provide manual update controls in the Settings page.
+
+5. **Brutalist Component Refresh**
    - Adjust the `container` and `main` layout to accommodate the new sidebar.
    - Maintain high-contrast borders and bold color schemes (Orange/Blue/White).
 
