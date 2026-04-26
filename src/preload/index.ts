@@ -1,8 +1,13 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  setSettings: (settings: any) => ipcRenderer.invoke('set-settings', settings),
+  selectDirectory: () => ipcRenderer.invoke('select-directory'),
+  getHistory: () => ipcRenderer.invoke('get-history')
+}
 
 if (process.contextIsolated) {
   try {

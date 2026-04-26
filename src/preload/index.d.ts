@@ -3,6 +3,11 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 declare global {
   interface Window {
     electron: ElectronAPI
-    api: unknown
+    api: {
+      getSettings: () => Promise<any>
+      setSettings: (settings: any) => Promise<boolean>
+      selectDirectory: () => Promise<string | null>
+      getHistory: () => Promise<any[]>
+    }
   }
 }

@@ -1,8 +1,9 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import bridgeApp from './bridge'
 import ytDlp from 'yt-dlp-exec'
+import store from './store'
 
 const BRIDGE_PORT = 4000
 
@@ -49,9 +50,33 @@ app.whenReady().then(() => {
     console.log(`Bridge server listening on port ${BRIDGE_PORT}`)
   })
 
+  // Settings IPC
+  ipcMain.handle('get-settings', () => {
+    return store.get('settings')
+  })
+
+  ipcMain.handle('set-settings', (_event, settings) => {
+    store.set('settings', settings)
+    return true
+  })
+
+  ipcMain.handle('select-directory', async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    if (canceled) return null
+    return filePaths[0]
+  })
+
+  // History IPC
+  ipcMain.handle('get-history', () => {
+    return store.get('history')
+  })
+
   // IPC Download Handler
   ipcMain.on('download-video', (event, url: string) => {
-    const downloadPath = app.getPath('downloads')
+    const settings = store.get('settings')
+    const downloadPath = settings.downloadPath || app.getPath('downloads')
 
     ytDlp(url, {
       output: join(downloadPath, '%(title)s.%(ext)s'),
@@ -60,6 +85,19 @@ app.whenReady().then(() => {
       addHeader: ['referer:youtube.com', 'user-agent:googlebot']
     })
       .then(() => {
+        // Add to history after successful download
+        const history = store.get('history') as any[]
+        const newItem = {
+          id: Date.now().toString(),
+          url,
+          title: 'Downloaded Video',
+          thumbnail: '',
+          filePath: downloadPath,
+          date: new Date().toISOString(),
+          status: 'completed'
+        }
+        store.set('history', [newItem, ...history])
+
         event.reply('download-complete', { status: 'success', url })
       })
       .catch(err => {
