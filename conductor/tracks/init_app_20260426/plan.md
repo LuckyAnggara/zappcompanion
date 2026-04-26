@@ -9,8 +9,8 @@
 
 ## Phase 2: Local API Bridge (Express Server)
 
-- [~] Task: Write Tests for Express Server (`/ping` and `/download` routes)
-- [ ] Task: Implement Express server in the Main process handling strict CORS
+- [x] Task: Write Tests for Express Server (`/ping` and `/download` routes) de05ebb
+- [~] Task: Implement Express server in the Main process handling strict CORS
 - [ ] Task: Implement GET `/ping` endpoint
 - [ ] Task: Implement POST `/download` endpoint integrating `yt-dlp-exec`
 - [ ] Task: Conductor - User Manual Verification 'Local API Bridge (Express Server)' (Protocol in workflow.md)

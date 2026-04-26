@@ -1,6 +1,9 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import bridgeApp from './bridge'
+
+const BRIDGE_PORT = 4000
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -35,6 +38,11 @@ app.whenReady().then(() => {
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
+  })
+
+  // Start Express Bridge
+  bridgeApp.listen(BRIDGE_PORT, () => {
+    console.log(`Bridge server listening on port ${BRIDGE_PORT}`)
   })
 
   createWindow()
