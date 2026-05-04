@@ -14,11 +14,13 @@ import store from './store'
 const binDir = join(app.getPath('userData'), 'bin')
 if (!existsSync(binDir)) mkdirSync(binDir, { recursive: true })
 
-const ffmpegPath = join(binDir, 'ffmpeg.exe')
+const ffmpegExeName = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
+const ffmpegPath = join(binDir, ffmpegExeName)
 
+const ytdlpExeName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
 const binaryPath = !app.isPackaged 
   ? undefined 
-  : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'yt-dlp-exec', 'bin', 'yt-dlp.exe')
+  : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'yt-dlp-exec', 'bin', ytdlpExeName)
 
 // @ts-expect-error - create exists in runtime
 const core = binaryPath ? ytDlp.create(binaryPath) : ytDlp
@@ -85,10 +87,13 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('download-muxer', async (event) => {
-    const url = 'https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip'
-    // Note: To keep it simple in this demo, we assume a direct exe download or simple zip.
-    // For production, usually we point to a verified direct .exe mirror.
-    const directExeUrl = 'https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffmpeg-win32-x64'
+    let platformSuffix = 'win32-x64'
+    if (process.platform === 'darwin') {
+      platformSuffix = process.arch === 'arm64' ? 'darwin-arm64' : 'darwin-x64'
+    } else if (process.platform === 'linux') {
+      platformSuffix = process.arch === 'arm64' ? 'linux-arm64' : 'linux-x64'
+    }
+    const directExeUrl = `https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffmpeg-${platformSuffix}`
     
     return new Promise((resolve) => {
       https.get(directExeUrl, (response) => {
@@ -102,6 +107,9 @@ app.whenReady().then(() => {
 
         file.on('finish', () => {
           file.close()
+          if (process.platform !== 'win32') {
+            import('fs').then(fs => fs.chmodSync(ffmpegPath, 0o755)).catch(() => {})
+          }
           resolve({ success: true })
         })
 
