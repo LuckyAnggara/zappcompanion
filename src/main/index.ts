@@ -16,8 +16,9 @@ if (!existsSync(binDir)) mkdirSync(binDir, { recursive: true })
 
 const ffmpegExeName = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
 const ffmpegPath = join(binDir, ffmpegExeName)
+const ffprobeExeName = process.platform === 'win32' ? 'ffprobe.exe' : 'ffprobe'
+const ffprobePath = join(binDir, ffprobeExeName)
 
-const ytdlpExeName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
 const binaryPath = !app.isPackaged 
   ? undefined 
   : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'yt-dlp-exec', 'bin', ytdlpExeName)
@@ -83,7 +84,7 @@ app.whenReady().then(() => {
 
   // Assets Management IPC
   ipcMain.handle('check-muxer', async () => {
-    return existsSync(ffmpegPath)
+    return existsSync(ffmpegPath) && existsSync(ffprobePath)
   })
 
   ipcMain.handle('download-muxer', async (event) => {
@@ -93,33 +94,37 @@ app.whenReady().then(() => {
     } else if (process.platform === 'linux') {
       platformSuffix = process.arch === 'arm64' ? 'linux-arm64' : 'linux-x64'
     }
-    const directExeUrl = `https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffmpeg-${platformSuffix}`
     
-    return new Promise((resolve) => {
-      https.get(directExeUrl, (response) => {
-        if (response.statusCode !== 200) {
-          resolve({ success: false, error: `Server returned ${response.statusCode}` })
-          return
-        }
-
-        const file = createWriteStream(ffmpegPath)
-        response.pipe(file)
-
-        file.on('finish', () => {
-          file.close()
-          if (process.platform !== 'win32') {
-            import('fs').then(fs => fs.chmodSync(ffmpegPath, 0o755)).catch(() => {})
+    const downloadBinary = (url: string, destPath: string) => {
+      return new Promise<void>((resolve, reject) => {
+        https.get(url, (response) => {
+          if (response.statusCode !== 200) {
+            reject(new Error(`Server returned ${response.statusCode}`))
+            return
           }
-          resolve({ success: true })
-        })
-
-        file.on('error', (err) => {
-          resolve({ success: false, error: err.message })
-        })
-      }).on('error', (err) => {
-        resolve({ success: false, error: err.message })
+          const file = createWriteStream(destPath)
+          response.pipe(file)
+          file.on('finish', () => {
+            file.close()
+            if (process.platform !== 'win32') {
+              import('fs').then(fs => fs.chmodSync(destPath, 0o755)).catch(() => {})
+            }
+            resolve()
+          })
+          file.on('error', reject)
+        }).on('error', reject)
       })
-    })
+    }
+
+    try {
+      await Promise.all([
+        downloadBinary(`https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffmpeg-${platformSuffix}`, ffmpegPath),
+        downloadBinary(`https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffprobe-${platformSuffix}`, ffprobePath)
+      ])
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
   })
 
   ipcMain.handle('get-settings', () => store.get('settings'))
@@ -189,7 +194,7 @@ app.whenReady().then(() => {
       addHeader: ['referer:youtube.com', 'user-agent:googlebot'],
       mergeOutputFormat: 'mp4',
       newline: true,
-      ffmpegLocation: ffmpegPath // Use our downloaded/managed ffmpeg
+      ffmpegLocation: binDir // Pass the directory containing both ffmpeg and ffprobe
     }
     if (formatId) options.format = formatId === 'best' ? 'bestvideo+bestaudio/best' : `${formatId}+bestaudio/best`
 
