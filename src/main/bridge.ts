@@ -11,10 +11,9 @@ const binaryPath = !electronApp.isPackaged
   ? undefined 
   : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'yt-dlp-exec', 'bin', ytdlpExeName)
 
+const binDir = join(electronApp.getPath('userData'), 'bin')
 const ffmpegExeName = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
-const ffmpegPath = !electronApp.isPackaged
-  ? join(process.cwd(), 'node_modules', 'ffmpeg-static', ffmpegExeName)
-  : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'ffmpeg-static', ffmpegExeName)
+const ffmpegPath = join(binDir, ffmpegExeName)
 
 // @ts-expect-error - create exists in runtime but not in types
 const core = binaryPath ? ytDlp.create(binaryPath) : ytDlp
