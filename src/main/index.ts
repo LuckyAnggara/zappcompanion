@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
-import { existsSync, mkdirSync, createWriteStream } from 'fs'
+import { existsSync, mkdirSync, createWriteStream, rmSync } from 'fs'
 import pkg from 'follow-redirects'
 const { https } = pkg
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -125,6 +125,20 @@ app.whenReady().then(() => {
     return filePaths[0]
   })
   ipcMain.handle('get-history', () => store.get('history'))
+  
+  ipcMain.handle('delete-history-item', async (_event, id: string, filePath: string) => {
+    try {
+      const history = store.get('history') as any[]
+      store.set('history', history.filter(item => item.id !== id))
+      if (existsSync(filePath)) {
+        rmSync(filePath, { force: true })
+      }
+      return { success: true }
+    } catch (err: any) {
+      console.error('Delete error:', err)
+      return { success: false, error: err.message }
+    }
+  })
   
   ipcMain.handle('get-metadata', async (_event, url: string) => {
     try {

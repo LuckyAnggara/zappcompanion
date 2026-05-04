@@ -10,7 +10,8 @@ import '@testing-library/jest-dom/vitest'
 window.electron = {
   ipcRenderer: {
     send: vi.fn(),
-    on: vi.fn()
+    on: vi.fn(),
+    removeAllListeners: vi.fn()
   }
 }
 
@@ -20,7 +21,9 @@ window.api = {
   getSettings: vi.fn(async () => ({ downloadPath: '' })),
   getHistory: vi.fn(async () => []),
   getYtDlpVersion: vi.fn(async () => '2025.01.01'),
-  updateYtDlp: vi.fn(async () => ({ success: true, version: '2025.01.01' }))
+  updateYtDlp: vi.fn(async () => ({ success: true, version: '2025.01.01' })),
+  checkMuxer: vi.fn(async () => true),
+  downloadMuxer: vi.fn(async () => ({ success: true }))
 }
 
 describe('Sidebar Navigation', () => {
@@ -36,9 +39,10 @@ describe('Sidebar Navigation', () => {
       expect(screen.queryByText(/System Startup/i)).not.toBeInTheDocument()
     }, { timeout: 5000 })
 
-    expect(screen.getByRole('link', { name: /Downloader/i })).toHaveAttribute('href', '#/downloader')
+    expect(screen.getByRole('link', { name: /Clipper/i })).toHaveAttribute('href', '#/downloader')
     expect(screen.getByRole('link', { name: /Library/i })).toHaveAttribute('href', '#/library')
     expect(screen.getByRole('link', { name: /Settings/i })).toHaveAttribute('href', '#/settings')
+    expect(screen.queryByRole('link', { name: /Documentation/i })).not.toBeInTheDocument()
   })
 
   it('navigates to library page when library icon is clicked', async () => {

@@ -7,11 +7,14 @@ const api = {
   setSettings: (settings: any) => ipcRenderer.invoke('set-settings', settings),
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
   getHistory: () => ipcRenderer.invoke('get-history'),
+  deleteHistoryItem: (id: string, filePath: string) => ipcRenderer.invoke('delete-history-item', id, filePath),
   getMetadata: (url: string) => ipcRenderer.invoke('get-metadata', url),
   openFile: (path: string) => ipcRenderer.invoke('open-file', path),
   showInFolder: (path: string) => ipcRenderer.invoke('show-in-folder', path),
   getYtDlpVersion: () => ipcRenderer.invoke('get-yt-dlp-version'),
-  updateYtDlp: () => ipcRenderer.invoke('update-yt-dlp')
+  updateYtDlp: () => ipcRenderer.invoke('update-yt-dlp'),
+  checkMuxer: () => ipcRenderer.invoke('check-muxer'),
+  downloadMuxer: () => ipcRenderer.invoke('download-muxer')
 }
 
 if (process.contextIsolated) {

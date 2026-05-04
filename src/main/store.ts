@@ -2,6 +2,7 @@ import Store from 'electron-store'
 
 interface AppSettings {
   downloadPath: string
+  devMode: boolean
 }
 
 interface DownloadHistory {
@@ -23,7 +24,8 @@ const store = new Store<Schema>({
   name: 'yt-dlp-bridge-settings',
   defaults: {
     settings: {
-      downloadPath: ''
+      downloadPath: '',
+      devMode: false
     },
     history: []
   }

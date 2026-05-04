@@ -15,6 +15,17 @@ vi.mock('electron-store', () => {
   }
 })
 
+vi.mock('yt-dlp-exec', () => {
+  const mockFn: any = async () => ({ title: 'Mock Video' })
+  mockFn.exec = () => ({
+    stdout: { on: vi.fn() },
+    then: vi.fn().mockReturnThis(),
+    catch: vi.fn()
+  })
+  mockFn.create = vi.fn(() => mockFn)
+  return { default: mockFn }
+})
+
 describe('Express Bridge API', () => {
   let app: any
 
@@ -40,6 +51,7 @@ describe('Express Bridge API', () => {
       .post('/download')
       .send({ url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' })
     
+    if (response.status !== 200) console.error('500 Error:', response.body)
     expect(response.status).toBe(200)
     expect(response.body.status).toBe('downloading')
   })

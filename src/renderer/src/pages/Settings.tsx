@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 
 interface AppSettings {
   downloadPath: string
+  devMode: boolean
 }
 
 export default function SettingsPage(): React.JSX.Element {
-  const [settings, setSettings] = useState<AppSettings>({ downloadPath: '' })
+  const [settings, setSettings] = useState<AppSettings>({ downloadPath: '', devMode: false })
   const [engineVersion, setEngineVersion] = useState<string>('Checking...')
+  const [muxerStatus, setMuxerStatus] = useState<string>('Checking...')
   const [updating, setUpdating] = useState(false)
   const [updateMsg, setUpdateMsg] = useState('')
 
@@ -16,6 +18,8 @@ export default function SettingsPage(): React.JSX.Element {
       setSettings(s)
       const v = await window.api.getYtDlpVersion()
       setEngineVersion(v)
+      const hasMuxer = await window.api.checkMuxer()
+      setMuxerStatus(hasMuxer ? 'Ready (Installed)' : 'Missing')
     }
   }
 
@@ -32,16 +36,34 @@ export default function SettingsPage(): React.JSX.Element {
     }
   }
 
-  const handleUpdate = async (): Promise<void> => {
+  const handleUpdateEngine = async (): Promise<void> => {
     setUpdating(true)
-    setUpdateMsg('Updating system core...')
+    setUpdateMsg('Optimizing system core...')
     try {
       const res = await window.api.updateYtDlp()
       if (res.success) {
         setEngineVersion(res.version || 'Updated')
-        setUpdateMsg('Optimization complete!')
+        setUpdateMsg('System optimization complete!')
       } else {
         setUpdateMsg(`Action failed: ${res.error}`)
+      }
+    } catch (err: any) {
+      setUpdateMsg(`System Error: ${err.message}`)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleDownloadMuxer = async (): Promise<void> => {
+    setUpdating(true)
+    setUpdateMsg('Downloading Media Muxer...')
+    try {
+      const res = await window.api.downloadMuxer()
+      if (res.success) {
+        setMuxerStatus('Ready (Installed)')
+        setUpdateMsg('Muxer installed successfully!')
+      } else {
+        setUpdateMsg(`Download failed: ${res.error}`)
       }
     } catch (err: any) {
       setUpdateMsg(`System Error: ${err.message}`)
@@ -56,7 +78,7 @@ export default function SettingsPage(): React.JSX.Element {
       <div className="settings-grid">
         <div className="setting-card">
           <h3>Storage Location</h3>
-          <p>Choose where your files will be saved on this device.</p>
+          <p>Choose where your clips will be saved on this device.</p>
           <div className="path-input-group">
             <input 
               type="text" 
@@ -68,22 +90,59 @@ export default function SettingsPage(): React.JSX.Element {
         </div>
 
         <div className="setting-card">
-          <h3>System Optimization</h3>
-          <p>Current Engine Version: <strong>{engineVersion}</strong></p>
+          <h3>System Core</h3>
+          <p>Status: <strong>Ready</strong></p>
+          <p>Optimization Version: <strong>{engineVersion}</strong></p>
           <button 
-            onClick={handleUpdate} 
+            onClick={handleUpdateEngine} 
             className="btn-black" 
             disabled={updating}
           >
-            {updating ? 'Processing...' : 'Update Engine'}
+            {updating ? 'Optimizing...' : 'Optimize Core'}
           </button>
-          {updateMsg && <p className="update-msg">{updateMsg}</p>}
+        </div>
+
+        <div className="setting-card">
+          <h3>Media Muxer</h3>
+          <p>Status: <strong style={{ color: muxerStatus === 'Missing' ? 'var(--orange)' : 'inherit' }}>{muxerStatus}</strong></p>
+          <p>Required for high-quality video & audio merging.</p>
+          <button 
+            onClick={handleDownloadMuxer} 
+            className="btn-black" 
+            disabled={updating || muxerStatus === 'Ready (Installed)'}
+          >
+            {updating ? 'Downloading...' : muxerStatus === 'Ready (Installed)' ? 'Muxer Installed' : 'Download Muxer'}
+          </button>
+        </div>
+
+        {updateMsg && (
+          <div className="status-banner" style={{ marginTop: '0', backgroundColor: 'var(--yellow)', color: 'var(--black)' }}>
+            {updateMsg}
+          </div>
+        )}
+
+        <div className="setting-card">
+          <h3>Developer Options</h3>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <input 
+              type="checkbox" 
+              checked={settings.devMode || false} 
+              onChange={async (e) => {
+                const newSettings = { ...settings, devMode: e.target.checked }
+                await window.api.setSettings(newSettings)
+                setSettings(newSettings)
+                window.dispatchEvent(new Event('settings-updated'))
+              }} 
+              style={{ width: '20px', height: '20px' }}
+            />
+            Enable Developer Mode (Shows API Documentation)
+          </label>
         </div>
 
         <div className="setting-card">
           <h3>About App</h3>
-          <p>YT Companion Bridge v1.0.0</p>
-          <p>Optimized for high-speed local processing.</p>
+          <p>Zap Clipper Companion v1.0.0</p>
+          <p>High-performance local processing engine.</p>
         </div>
       </div>
     </div>

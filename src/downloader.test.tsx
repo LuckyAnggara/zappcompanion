@@ -13,6 +13,9 @@ window.electron = {
     send: vi.fn(),
     on: vi.fn((channel, cb) => {
       ipcHandlers[channel] = cb
+    }),
+    removeAllListeners: vi.fn((channel) => {
+      delete ipcHandlers[channel]
     })
   }
 }
@@ -38,23 +41,25 @@ describe('Downloader Page Transitions', () => {
     render(<DownloaderPage />)
     
     // 1. Fetch metadata
-    const input = screen.getByPlaceholderText(/Enter video URL/i)
+    const input = screen.getByPlaceholderText(/Paste link here/i)
     fireEvent.change(input, { target: { value: 'https://youtube.com/test' } })
-    fireEvent.click(screen.getByRole('button', { name: /Fetch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Analyze/i }))
     
     await waitFor(() => expect(screen.getByText(/Test Video/i)).toBeInTheDocument())
     
     // 2. Start download
-    fireEvent.click(screen.getByRole('button', { name: /Start Download/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Zap Clip/i }))
     
     // 3. Simulate progress event
     act(() => {
-      ipcHandlers['download-progress']({}, { url: 'https://youtube.com/test', progress: 50.5 })
+      if (ipcHandlers['download-progress']) {
+        ipcHandlers['download-progress']({}, { url: 'https://youtube.com/test', progress: 50.5 })
+      }
     })
     
     // 4. Verify UI state
     await waitFor(() => {
-      expect(screen.queryByPlaceholderText(/Enter video URL/i)).not.toBeInTheDocument()
+      expect(screen.queryByPlaceholderText(/Paste link here/i)).not.toBeInTheDocument()
       expect(screen.getByText(/50.5%/i)).toBeInTheDocument()
     })
   })
@@ -63,28 +68,32 @@ describe('Downloader Page Transitions', () => {
     render(<DownloaderPage />)
     
     // 1. Trigger download state
-    const input = screen.getByPlaceholderText(/Enter video URL/i)
+    const input = screen.getByPlaceholderText(/Paste link here/i)
     fireEvent.change(input, { target: { value: 'https://youtube.com/test' } })
-    fireEvent.click(screen.getByRole('button', { name: /Fetch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Analyze/i }))
     await waitFor(() => expect(screen.getByText(/Test Video/i)).toBeInTheDocument())
-    fireEvent.click(screen.getByRole('button', { name: /Start Download/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Zap Clip/i }))
     
     act(() => {
-      ipcHandlers['download-progress']({}, { url: 'https://youtube.com/test', progress: 99.9 })
+      if (ipcHandlers['download-progress']) {
+        ipcHandlers['download-progress']({}, { url: 'https://youtube.com/test', progress: 99.9 })
+      }
     })
     
     // Check it's hidden
-    expect(screen.queryByPlaceholderText(/Enter video URL/i)).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText(/Paste link here/i)).not.toBeInTheDocument()
 
     // 2. Simulate complete
     act(() => {
-      ipcHandlers['download-complete']({}, { url: 'https://youtube.com/test' })
+      if (ipcHandlers['download-complete']) {
+        ipcHandlers['download-complete']({}, { url: 'https://youtube.com/test' })
+      }
     })
 
     // 3. Verify restore
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Enter video URL/i)).toBeInTheDocument()
-      expect(screen.getByText(/Success: Downloaded/i)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Paste link here/i)).toBeInTheDocument()
+      expect(screen.getByText(/Success: Processed/i)).toBeInTheDocument()
     })
   })
 })

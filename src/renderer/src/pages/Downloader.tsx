@@ -9,7 +9,7 @@ interface Metadata {
 
 export default function DownloaderPage(): React.JSX.Element {
   const [url, setUrl] = useState('')
-  const [status, setStatus] = useState('Ready to bridge.')
+  const [status, setStatus] = useState('Core system ready.')
   const [logs, setLogs] = useState<string[]>([])
   const [metadata, setMetadata] = useState<Metadata | null>(null)
   const [loading, setLoading] = useState(false)
@@ -22,30 +22,40 @@ export default function DownloaderPage(): React.JSX.Element {
   useEffect(() => {
     if (!window.electron) return
 
-    const handleComplete = (_event, arg): void => {
-      setStatus(`Success: Downloaded ${arg.url}`)
+    const handleComplete = (_event: any, arg: any): void => {
+      setStatus(`Success: Processed ${arg.url}`)
       setLogs(prev => [...prev, `[SUCCESS] ${arg.url}`])
       setProgress(null)
       setActiveDownloadMeta(null)
     }
 
-    const handleError = (_event, arg): void => {
+    const handleError = (_event: any, arg: any): void => {
       setStatus(`Error: ${arg.message}`)
       setLogs(prev => [...prev, `[ERROR] ${arg.url}: ${arg.message}`])
       setProgress(null)
       setActiveDownloadMeta(null)
     }
 
-    const handleProgress = (_event, arg): void => {
+    const handleProgress = (_event: any, arg: any): void => {
       setProgress(arg.progress)
     }
 
+    const handleApiLog = (_event: any, msg: string): void => {
+      setLogs(prev => [...prev, msg])
+    }
+
+    // Assign listeners
     window.electron.ipcRenderer.on('download-complete', handleComplete)
     window.electron.ipcRenderer.on('download-error', handleError)
     window.electron.ipcRenderer.on('download-progress', handleProgress)
+    window.electron.ipcRenderer.on('api-log', handleApiLog)
 
+    // CLEANUP FUNCTION: Remove listeners when component unmounts
     return () => {
-      // In a real app we'd remove listeners
+      window.electron.ipcRenderer.removeAllListeners('download-complete')
+      window.electron.ipcRenderer.removeAllListeners('download-error')
+      window.electron.ipcRenderer.removeAllListeners('download-progress')
+      window.electron.ipcRenderer.removeAllListeners('api-log')
     }
   }, [])
 
@@ -54,15 +64,15 @@ export default function DownloaderPage(): React.JSX.Element {
     setLoading(true)
     setProgress(null)
     setMetadata(null)
-    setStatus(`Fetching metadata for: ${url}`)
+    setStatus(`Analyzing resource: ${url}`)
     try {
       const data = await window.api.getMetadata(url)
       setMetadata(data)
-      setStatus('Metadata loaded. Choose quality and download.')
-      setLogs(prev => [...prev, `[INFO] Metadata loaded for ${url}`])
+      setStatus('Analysis complete. Select resolution and clip.')
+      setLogs(prev => [...prev, `[INFO] Resource analysis successful for ${url}`])
     } catch (err: any) {
-      setStatus(`Error: ${err.message}`)
-      setLogs(prev => [...prev, `[ERROR] Failed to fetch metadata: ${err.message}`])
+      setStatus(`System Error: ${err.message}`)
+      setLogs(prev => [...prev, `[ERROR] Analysis failed: ${err.message}`])
     } finally {
       setLoading(false)
     }
@@ -72,8 +82,8 @@ export default function DownloaderPage(): React.JSX.Element {
     if (url) {
       const meta = { title: metadata?.title, thumbnail: metadata?.thumbnail }
       setActiveDownloadMeta(meta)
-      setStatus(`Starting download for: ${url}`)
-      setLogs(prev => [...prev, `[INFO] Requesting ${url} (Format: ${selectedFormat})`])
+      setStatus(`Processing: ${url}`)
+      setLogs(prev => [...prev, `[INFO] Initializing clip for ${url} (Resolution: ${selectedFormat})`])
       
       window.electron.ipcRenderer.send('download-video', { 
         url, 
@@ -95,20 +105,20 @@ export default function DownloaderPage(): React.JSX.Element {
 
   return (
     <div className="downloader-page">
-      <h2>Downloader</h2>
+      <h2>Zap Clipper</h2>
 
       {!isDownloading ? (
         <div className="downloader-form">
           <div className="input-group">
             <input
               type="text"
-              placeholder="Enter video URL"
+              placeholder="Paste link here"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="brutalist-input"
             />
             <button onClick={handleFetchMetadata} className="brutalist-button" disabled={loading}>
-              {loading ? '...' : 'Fetch'}
+              {loading ? '...' : 'Analyze'}
             </button>
           </div>
           
@@ -118,7 +128,7 @@ export default function DownloaderPage(): React.JSX.Element {
                 <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail" />
                 <div className="details">
                   <h3>{metadata.title}</h3>
-                  <p>Uploader: {metadata.uploader}</p>
+                  <p>Source: {metadata.uploader}</p>
                   
                   <div className="quality-selector">
                     <label>Select Resolution:</label>
@@ -127,7 +137,7 @@ export default function DownloaderPage(): React.JSX.Element {
                       onChange={(e) => setSelectedFormat(e.target.value)}
                       className="brutalist-select"
                     >
-                      <option value="best">Best Quality (Auto)</option>
+                      <option value="best">Highest (Auto)</option>
                       {availableFormats.map((f) => (
                         <option key={f.format_id} value={f.format_id}>
                           {f.resolution} ({f.ext})
@@ -137,7 +147,7 @@ export default function DownloaderPage(): React.JSX.Element {
                   </div>
 
                   <button onClick={handleDownload} className="brutalist-button download-btn">
-                    Start Download
+                    Zap Clip
                   </button>
                 </div>
               </div>
@@ -153,7 +163,7 @@ export default function DownloaderPage(): React.JSX.Element {
           <div className="active-content">
             <div className="active-header">
                <div className="spinner"></div>
-               <h3>Active Download</h3>
+               <h3>Active Process</h3>
             </div>
             <div className="active-body">
               {activeDownloadMeta?.thumbnail && (
@@ -175,9 +185,9 @@ export default function DownloaderPage(): React.JSX.Element {
       )}
 
       <div className="log-area">
-        <h3>Activity Log</h3>
+        <h3>System Activity</h3>
         <div className="log-content">
-          {logs.length === 0 && <p className="empty-log">No activity yet.</p>}
+          {logs.length === 0 && <p className="empty-log">System idle.</p>}
           {logs.map((log, i) => (
             <div key={i} className="log-entry">{log}</div>
           ))}

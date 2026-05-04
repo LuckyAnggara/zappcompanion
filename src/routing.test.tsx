@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import React from 'react'
 import App from './renderer/src/App'
 import '@testing-library/jest-dom/vitest'
@@ -28,6 +28,9 @@ describe('App Routing', () => {
 
   it('renders DownloaderPage by default (via redirect)', async () => {
     render(<App />)
-    expect(screen.getByRole('button', { name: /Fetch/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText(/System Startup/i)).not.toBeInTheDocument()
+    }, { timeout: 5000 })
+    expect(screen.getByRole('button', { name: /Analyze/i })).toBeInTheDocument()
   })
 })

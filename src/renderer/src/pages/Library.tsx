@@ -24,8 +24,24 @@ export default function LibraryPage(): React.JSX.Element {
     refreshHistory()
   }, [])
 
-  const openFile = (path: string): void => window.api.openFile(path)
-  const showInFolder = (path: string): void => window.api.showInFolder(path)
+  const openFile = async (path: string): Promise<void> => {
+    await window.api.openFile(path)
+  }
+
+  const showInFolder = async (path: string): Promise<void> => {
+    await window.api.showInFolder(path)
+  }
+
+  const handleDelete = async (id: string, filePath: string): Promise<void> => {
+    if (window.confirm('Are you sure you want to delete this video? This will permanently remove the file from your computer.')) {
+      const res = await window.api.deleteHistoryItem(id, filePath)
+      if (res.success) {
+        refreshHistory()
+      } else {
+        alert(`Failed to delete: ${res.error}`)
+      }
+    }
+  }
 
   return (
     <div className="library-page">
@@ -41,6 +57,7 @@ export default function LibraryPage(): React.JSX.Element {
               <div className="item-actions">
                 <button onClick={() => openFile(item.filePath)} className="action-btn">Play</button>
                 <button onClick={() => showInFolder(item.filePath)} className="action-btn">Folder</button>
+                <button onClick={() => handleDelete(item.id, item.filePath)} className="action-btn delete-btn">Delete</button>
               </div>
             </div>
           </div>

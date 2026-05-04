@@ -10,7 +10,8 @@ import '@testing-library/jest-dom/vitest'
 window.electron = {
   ipcRenderer: {
     send: vi.fn(),
-    on: vi.fn()
+    on: vi.fn(),
+    removeAllListeners: vi.fn()
   }
 }
 
@@ -20,7 +21,9 @@ window.api = {
   getSettings: vi.fn(async () => ({ downloadPath: '' })),
   getHistory: vi.fn(async () => []),
   getYtDlpVersion: vi.fn(async () => '2025.01.01'),
-  updateYtDlp: vi.fn(async () => ({ success: true, version: '2025.01.01' }))
+  updateYtDlp: vi.fn(async () => ({ success: true, version: '2025.01.01' })),
+  checkMuxer: vi.fn(async () => true),
+  downloadMuxer: vi.fn(async () => ({ success: true }))
 }
 
 describe('UI Regression Tests (Temporary Commented out during overhaul)', () => {
@@ -31,8 +34,8 @@ describe('UI Regression Tests (Temporary Commented out during overhaul)', () => 
 
   it('renders app logo in sidebar', async () => {
     render(<App />)
-    // There are two 'YT' logos now (one in startup, one in sidebar)
-    const logos = await screen.findAllByText(/YT/i)
+    // There are two 'ZC' logos now (one in startup, one in sidebar)
+    const logos = await screen.findAllByText(/ZC/i)
     expect(logos.length).toBeGreaterThan(0)
   })
 })
