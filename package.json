@@ -1,7 +1,8 @@
 {
-  "name": "yt-dlp-bridge",
+  "name": "zap-clipper-companion",
   "version": "1.0.0",
-  "description": "",
+  "description": "High-performance local processing engine for Zap Clipper.",
+  "author": "Zap Clipper Team",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -9,11 +10,40 @@
     "preview": "electron-vite preview",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "dist": "electron-vite build && electron-builder"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "build": {
+    "appId": "com.zapclipper.companion",
+    "productName": "Zap Clipper Companion",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "username-github-anda",
+        "repo": "nama-repo-anda"
+      }
+    ],
+    "asarUnpack": [
+      "**/node_modules/yt-dlp-exec/bin/*",
+      "**/node_modules/ffmpeg-static/ffmpeg.exe"
+    ]
+  },
   "type": "module",
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -21,7 +51,10 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "cors": "^2.8.6",
     "electron-store": "^11.0.2",
+    "electron-updater": "^6.8.3",
     "express": "^5.2.1",
+    "ffmpeg-static": "^5.3.0",
+    "follow-redirects": "^1.16.0",
     "lucide-react": "^1.11.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
@@ -37,12 +70,14 @@
     "@testing-library/react": "^16.3.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/follow-redirects": "^1.14.4",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/supertest": "^7.2.0",
     "@vitejs/plugin-react": "^4.7.0",
     "electron": "^41.3.0",
+    "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
     "eslint": "^10.2.1",
     "eslint-plugin-react": "^7.37.5",
