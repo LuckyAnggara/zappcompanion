@@ -19,6 +19,7 @@ const ffmpegPath = join(binDir, ffmpegExeName)
 const ffprobeExeName = process.platform === 'win32' ? 'ffprobe.exe' : 'ffprobe'
 const ffprobePath = join(binDir, ffprobeExeName)
 
+const ytdlpExeName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
 const binaryPath = !app.isPackaged 
   ? undefined 
   : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'yt-dlp-exec', 'bin', ytdlpExeName)
