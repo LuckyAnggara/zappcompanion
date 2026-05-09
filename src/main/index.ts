@@ -35,6 +35,7 @@ function createWindow(): void {
     height: 750,
     show: false,
     autoHideMenuBar: true,
+    title: 'Zap Clipper Companion',
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false

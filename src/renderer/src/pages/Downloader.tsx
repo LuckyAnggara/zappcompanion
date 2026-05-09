@@ -36,7 +36,6 @@ export default function DownloaderPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
   const [selectedFormat, setSelectedFormat] = useState('best')
-  const [activeDownloadMeta, setActiveDownloadMeta] = useState<any>(null)
   const [sectionStart, setSectionStart] = useState('')
   const [sectionEnd, setSectionEnd] = useState('')
   const [sliderValues, setSliderValues] = useState<[number, number]>([0, 100])
@@ -61,14 +60,12 @@ export default function DownloaderPage(): React.JSX.Element {
       setStatus(`Success: Processed ${arg.url}`)
       setLogs(prev => [...prev, `[SUCCESS] ${arg.url}`])
       setProgress(null)
-      setActiveDownloadMeta(null)
     }
 
     const handleError = (_event: any, arg: any): void => {
       setStatus(`Error: ${arg.message}`)
       setLogs(prev => [...prev, `[ERROR] ${arg.url}: ${arg.message}`])
       setProgress(null)
-      setActiveDownloadMeta(null)
     }
 
     const handleProgress = (_event: any, arg: any): void => {
@@ -114,7 +111,7 @@ export default function DownloaderPage(): React.JSX.Element {
         setSectionStart('')
         setSectionEnd('')
       }
-      setStatus('Analysis complete. Select options and clip.')
+      setStatus('Analysis complete. Select resolution and clip.')
       setLogs(prev => [...prev, `[INFO] Resource analysis successful for ${url}`])
     } catch (err: any) {
       setStatus(`System Error: ${err.message}`)
@@ -126,21 +123,18 @@ export default function DownloaderPage(): React.JSX.Element {
 
   const handleDownload = (): void => {
     if (url) {
-      const meta = { title: metadata?.title, thumbnail: metadata?.thumbnail }
-      setActiveDownloadMeta(meta)
       setStatus(`Processing: ${url}`)
       setLogs(prev => [...prev, `[INFO] Initializing clip for ${url} (Resolution: ${selectedFormat})`])
       
       window.electron.ipcRenderer.send('download-video', { 
         url, 
         formatId: selectedFormat,
-        metadata: meta,
+        metadata: { title: metadata?.title, thumbnail: metadata?.thumbnail },
         sectionStart: sectionStart.trim() !== '' ? sectionStart.trim() : undefined,
         sectionEnd: sectionEnd.trim() !== '' ? sectionEnd.trim() : undefined
       })
       
-      setMetadata(null)
-      setUrl('')
+      // We no longer clear metadata or URL here to keep UI visible during download
     }
   }
 
@@ -185,125 +179,124 @@ export default function DownloaderPage(): React.JSX.Element {
     <div className="downloader-page">
       <h2>Zap Clipper</h2>
 
-      {!isDownloading ? (
-        <div className="downloader-form">
-          <div className="input-group">
-            <input
-              type="text"
-              placeholder="Paste link here"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="brutalist-input"
-            />
-            <button onClick={handleFetchMetadata} className="brutalist-button" disabled={loading}>
-              {loading ? '...' : 'Analyze'}
-            </button>
-          </div>
-          
-          {metadata && (
-            <div className="metadata-preview scale-in">
-              <div className="preview-content">
-                <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail" />
-                <div className="details">
-                  <h3>{metadata.title}</h3>
-                  <p>Source: {metadata.uploader}</p>
-                  
-                  <div className="options-grid">
-                    <div className="quality-selector">
-                      <label>Select Resolution:</label>
-                      <select 
-                        value={selectedFormat} 
-                        onChange={(e) => setSelectedFormat(e.target.value)}
-                        className="brutalist-select"
-                      >
-                        <option value="best">Highest (Auto)</option>
-                        {availableFormats.map((f) => (
-                          <option key={f.format_id} value={f.format_id}>
-                            {f.resolution} ({f.ext})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="trim-selector">
-                      <label>Trim Video (Optional):</label>
-                      
-                      {metadata.duration ? (
-                        <div className="slider-container">
-                          <Slider.Root 
-                            className="SliderRoot" 
-                            value={sliderValues} 
-                            max={metadata.duration} 
-                            step={1}
-                            onValueChange={handleSliderChange}
-                          >
-                            <Slider.Track className="SliderTrack">
-                              <Slider.Range className="SliderRange" />
-                            </Slider.Track>
-                            <Slider.Thumb className="SliderThumb" aria-label="Start time" />
-                            <Slider.Thumb className="SliderThumb" aria-label="End time" />
-                          </Slider.Root>
-                        </div>
-                      ) : null}
-
-                      <div className="trim-inputs">
-                        <input 
-                          type="text" 
-                          placeholder="Start (e.g. 01:20)" 
-                          value={sectionStart}
-                          onChange={handleStartChange}
-                          className="brutalist-input small-input"
-                        />
-                        <span className="trim-separator">to</span>
-                        <input 
-                          type="text" 
-                          placeholder="End (e.g. 02:45)" 
-                          value={sectionEnd}
-                          onChange={handleEndChange}
-                          className="brutalist-input small-input"
-                        />
-                      </div>
-                      <span className="trim-help">Format: SS or MM:SS or HH:MM:SS</span>
-                    </div>
-                  </div>
-
-                  <button onClick={handleDownload} className="brutalist-button download-btn">
-                    Zap Clip
-                  </button>
+      <div className="downloader-form">
+        <div className="input-group">
+          <input
+            type="text"
+            placeholder="Paste link here"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="brutalist-input"
+            disabled={isDownloading}
+          />
+          <button onClick={handleFetchMetadata} className="brutalist-button" disabled={loading || isDownloading}>
+            {loading ? '...' : 'Analyze'}
+          </button>
+        </div>
+        
+        {metadata && (
+          <div className="metadata-preview scale-in">
+            <div className="preview-layout-top">
+              <div className="thumbnail-container">
+                <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail-16-9" />
+              </div>
+              <div className="details-container">
+                <h3>{metadata.title}</h3>
+                <p className="uploader-name">Source: {metadata.uploader}</p>
+                
+                <div className="quality-selector">
+                  <label>Select Resolution:</label>
+                  <select 
+                    value={selectedFormat} 
+                    onChange={(e) => setSelectedFormat(e.target.value)}
+                    className="brutalist-select"
+                    disabled={isDownloading}
+                  >
+                    <option value="best">Highest (Auto)</option>
+                    {availableFormats.map((f) => (
+                      <option key={f.format_id} value={f.format_id}>
+                        {f.resolution} ({f.ext})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
-          )}
 
+            <div className="trim-section-bottom">
+              <div className="trim-selector">
+                <label>Trim Video (Optional):</label>
+                
+                {metadata.duration ? (
+                  <div className="slider-container">
+                    <Slider.Root 
+                      className="SliderRoot" 
+                      value={sliderValues} 
+                      max={metadata.duration} 
+                      step={1}
+                      onValueChange={handleSliderChange}
+                      disabled={isDownloading}
+                    >
+                      <Slider.Track className="SliderTrack">
+                        <Slider.Range className="SliderRange" />
+                      </Slider.Track>
+                      <Slider.Thumb className="SliderThumb" aria-label="Start time" />
+                      <Slider.Thumb className="SliderThumb" aria-label="End time" />
+                    </Slider.Root>
+                  </div>
+                ) : null}
+
+                <div className="trim-inputs">
+                  <input 
+                    type="text" 
+                    placeholder="Start (e.g. 01:20)" 
+                    value={sectionStart}
+                    onChange={handleStartChange}
+                    className="brutalist-input small-input"
+                    disabled={isDownloading}
+                  />
+                  <span className="trim-separator">to</span>
+                  <input 
+                    type="text" 
+                    placeholder="End (e.g. 02:45)" 
+                    value={sectionEnd}
+                    onChange={handleEndChange}
+                    className="brutalist-input small-input"
+                    disabled={isDownloading}
+                  />
+                </div>
+                <span className="trim-help">Format: SS or MM:SS or HH:MM:SS</span>
+              </div>
+
+              <button 
+                onClick={handleDownload} 
+                className="brutalist-button zap-clip-btn"
+                disabled={isDownloading}
+              >
+                {isDownloading ? 'Processing...' : 'ZAP CLIP (DOWNLOAD)'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isDownloading ? (
+          <div className="active-progress-footer scale-in">
+             <div className="progress-header">
+                <div className="spinner small"></div>
+                <span>ACTIVE DOWNLOAD PROCESS</span>
+             </div>
+             <div className="status-text">{status}</div>
+             <div className="progress-container large">
+                <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+                <span className="progress-text">{progress}%</span>
+             </div>
+          </div>
+        ) : (
           <div className="status-banner">
             {status}
           </div>
-        </div>
-      ) : (
-        <div className="active-download-card">
-          <div className="active-content">
-            <div className="active-header">
-               <div className="spinner"></div>
-               <h3>Active Process</h3>
-            </div>
-            <div className="active-body">
-              {activeDownloadMeta?.thumbnail && (
-                <img src={activeDownloadMeta.thumbnail} alt="Thumb" className="active-thumb" />
-              )}
-              <div className="active-details">
-                <div className="active-title">{activeDownloadMeta?.title || 'Processing...'}</div>
-                <div className="status-text">{status}</div>
-                <div className="progress-wrapper">
-                  <div className="progress-container">
-                    <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-                    <span className="progress-text">{progress}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="log-area">
         <h3>System Activity</h3>
@@ -319,7 +312,7 @@ export default function DownloaderPage(): React.JSX.Element {
         .downloader-page {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 15px;
         }
 
         .scale-in {
@@ -327,185 +320,152 @@ export default function DownloaderPage(): React.JSX.Element {
         }
 
         @keyframes scaleIn {
-          from { transform: scale(0.95); opacity: 0; }
+          from { transform: scale(0.98); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
 
-        .options-grid {
-          display: flex;
-          gap: 20px;
-          margin: 15px 0;
-        }
-
-        .quality-selector, .trim-selector {
-          flex: 1;
-          background-color: var(--gray);
-          border: 3px solid var(--black);
-          padding: 15px;
-        }
-        
-        .trim-selector {
-          background-color: var(--yellow);
-        }
-
-        .quality-selector label, .trim-selector label {
-          display: block;
-          font-weight: bold;
-          margin-bottom: 10px;
-          text-transform: uppercase;
-        }
-
-        .slider-container {
-          margin-bottom: 15px;
-          padding: 10px 5px;
-        }
-
-        .SliderRoot {
-          position: relative;
-          display: flex;
-          align-items: center;
-          user-select: none;
-          touch-action: none;
-          width: 100%;
-          height: 20px;
-        }
-
-        .SliderTrack {
-          background-color: var(--black);
-          position: relative;
-          flex-grow: 1;
-          border-radius: 9999px;
-          height: 6px;
-        }
-
-        .SliderRange {
-          position: absolute;
-          background-color: var(--blue);
-          border-radius: 9999px;
-          height: 100%;
-        }
-
-        .SliderThumb {
-          display: block;
-          width: 20px;
-          height: 20px;
-          background-color: var(--orange);
-          border: 3px solid var(--black);
-          border-radius: 50%;
-          cursor: grab;
-        }
-
-        .SliderThumb:hover {
-          background-color: var(--white);
-        }
-
-        .SliderThumb:focus {
-          outline: none;
-          box-shadow: 0 0 0 3px var(--blue);
-        }
-
-        .trim-inputs {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .small-input {
-          padding: 8px;
-          font-size: 0.9rem;
-          border: 3px solid var(--black);
-          width: 100%;
-        }
-
-        .trim-separator {
-          font-weight: bold;
-          text-transform: uppercase;
-        }
-        
-        .trim-help {
-          display: block;
-          margin-top: 5px;
-          font-size: 0.75rem;
-          font-style: italic;
-          color: #555;
-        }
-
-        /* Active Download View */
-        .active-download-card {
-          border: 6px solid var(--black);
-          background-color: var(--black);
-          color: var(--white);
-          box-shadow: 15px 15px 0px var(--orange);
-          margin-bottom: 30px;
-          overflow: hidden;
-        }
-
-        .active-header {
-          background-color: var(--orange);
-          padding: 15px;
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          border-bottom: 6px solid var(--black);
-        }
-
-        .active-header h3 {
-          margin: 0;
-          text-transform: uppercase;
-          font-size: 1.5rem;
-          color: var(--white);
-          -webkit-text-stroke: 1px var(--black);
-        }
-
-        .active-body {
-          padding: 20px;
+        /* Top Layout: Thumbnail + Details */
+        .preview-layout-top {
           display: flex;
           gap: 25px;
-          background-color: var(--white);
-          color: var(--black);
+          margin-bottom: 20px;
+          align-items: flex-start;
         }
 
-        .active-thumb {
-          width: 200px;
-          border: 4px solid var(--black);
+        .thumbnail-container {
+          flex: 0 0 350px;
         }
 
-        .active-details {
-          flex-grow: 1;
+        .thumbnail-16-9 {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          object-fit: cover;
+          border: var(--border-thick) solid var(--black);
+          box-shadow: 8px 8px 0px var(--black);
+        }
+
+        .details-container {
+          flex: 1;
           display: flex;
           flex-direction: column;
-          justify-content: center;
         }
 
-        .active-title {
-          font-size: 1.4rem;
-          font-weight: 900;
-          margin-bottom: 10px;
+        .details-container h3 {
+          margin: 0 0 10px 0;
+          font-size: 1.6rem;
           text-transform: uppercase;
+          line-height: 1.2;
         }
 
-        .status-text {
+        .uploader-name {
           font-weight: bold;
           color: var(--blue);
           margin-bottom: 15px;
+        }
+
+        .quality-selector {
+          background-color: var(--gray);
+          border: 3px solid var(--black);
+          padding: 12px;
+          box-shadow: 6px 6px 0px var(--black);
+        }
+
+        .quality-selector label {
+          display: block;
+          font-weight: 900;
+          margin-bottom: 5px;
           text-transform: uppercase;
+          font-size: 0.85rem;
         }
 
-        .progress-wrapper {
-          width: 100%;
+        /* Bottom Section: Trim + Action */
+        .trim-section-bottom {
+          display: flex;
+          gap: 20px;
+          align-items: flex-end;
+          border-top: 3px dashed var(--black);
+          padding-top: 20px;
         }
 
-        .spinner {
-          width: 30px;
-          height: 30px;
-          border: 4px solid var(--white);
-          border-top-color: var(--black);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
+        .trim-selector {
+          flex: 1;
+          background-color: var(--yellow);
+          border: var(--border-thick) solid var(--black);
+          padding: 15px;
+          box-shadow: 8px 8px 0px var(--black);
         }
 
-        @keyframes spin {
-          to { transform: rotate(360deg); }
+        .trim-selector label {
+          display: block;
+          font-weight: 900;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+          font-size: 0.9rem;
+        }
+
+        .zap-clip-btn {
+          flex: 0 0 250px;
+          height: 100px;
+          background-color: var(--blue);
+          color: var(--white);
+          border: var(--border-thick) solid var(--black) !important;
+          box-shadow: 8px 8px 0px var(--black);
+          font-size: 1.5rem !important;
+          line-height: 1;
+          transition: all 0.1s;
+        }
+
+        .zap-clip-btn:hover:not(:disabled) {
+          background-color: var(--orange);
+          transform: translate(-2px, -2px);
+          box-shadow: 10px 10px 0px var(--black);
+        }
+
+        .zap-clip-btn:active:not(:disabled) {
+          transform: translate(4px, 4px);
+          box-shadow: 0px 0px 0px var(--black);
+        }
+
+        /* Progress Footer */
+        .active-progress-footer {
+          background-color: var(--black);
+          color: var(--white);
+          padding: 20px;
+          border: var(--border-thick) solid var(--black);
+          box-shadow: 10px 10px 0px var(--orange);
+          margin-top: 10px;
+        }
+
+        .progress-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          margin-bottom: 10px;
+        }
+
+        .status-text {
+          font-family: monospace;
+          font-size: 0.9rem;
+          color: var(--yellow);
+          margin-bottom: 15px;
+        }
+
+        .progress-container.large {
+          height: 35px;
+          border: 3px solid var(--white);
+        }
+
+        .spinner.small {
+          width: 20px;
+          height: 20px;
+          border-width: 3px;
+        }
+
+        /* Overriding some global styles for the page */
+        .metadata-preview {
+          box-shadow: 15px 15px 0px var(--blue);
         }
       `}</style>
     </div>

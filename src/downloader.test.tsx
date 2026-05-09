@@ -60,12 +60,15 @@ describe('Downloader Page Transitions', () => {
     
     // 4. Verify UI state
     await waitFor(() => {
-      expect(screen.queryByPlaceholderText(/Paste link here/i)).not.toBeInTheDocument()
+      // Input form should remain visible but disabled
+      expect(screen.getByPlaceholderText(/Paste link here/i)).toBeDisabled()
+      // Progress bar should be visible at bottom
       expect(screen.getByText(/50.5%/i)).toBeInTheDocument()
+      expect(screen.getByText(/ACTIVE DOWNLOAD PROCESS/i)).toBeInTheDocument()
     })
   })
 
-  it('restores input form when download completes', async () => {
+  it('restores button state when download completes', async () => {
     render(<DownloaderPage />)
     
     // 1. Trigger download state
@@ -73,7 +76,7 @@ describe('Downloader Page Transitions', () => {
     fireEvent.change(input, { target: { value: 'https://youtube.com/test' } })
     fireEvent.click(screen.getByRole('button', { name: /Analyze/i }))
     await waitFor(() => expect(screen.getByText(/Test Video/i)).toBeInTheDocument())
-    fireEvent.click(screen.getByRole('button', { name: /Zap Clip/i }))
+    fireEvent.click(screen.getByRole('button', { name: /ZAP CLIP \(DOWNLOAD\)/i }))
     
     act(() => {
       if (ipcHandlers['download-progress']) {
@@ -81,8 +84,7 @@ describe('Downloader Page Transitions', () => {
       }
     })
     
-    // Check it's hidden
-    expect(screen.queryByPlaceholderText(/Paste link here/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Processing.../i })).toBeDisabled()
 
     // 2. Simulate complete
     act(() => {
@@ -93,7 +95,7 @@ describe('Downloader Page Transitions', () => {
 
     // 3. Verify restore
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Paste link here/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /ZAP CLIP \(DOWNLOAD\)/i })).not.toBeDisabled()
       expect(screen.getByText(/Success: Processed/i)).toBeInTheDocument()
     })
   })

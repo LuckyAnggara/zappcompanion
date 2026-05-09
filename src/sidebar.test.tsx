@@ -18,12 +18,14 @@ window.electron = {
 // @ts-expect-error - mock window
 window.api = {
   getMetadata: vi.fn(),
-  getSettings: vi.fn(async () => ({ downloadPath: '' })),
+  getSettings: vi.fn(async () => ({ downloadPath: '', devMode: false, unlockQuality: false })),
   getHistory: vi.fn(async () => []),
   getYtDlpVersion: vi.fn(async () => '2025.01.01'),
   updateYtDlp: vi.fn(async () => ({ success: true, version: '2025.01.01' })),
   checkMuxer: vi.fn(async () => true),
-  downloadMuxer: vi.fn(async () => ({ success: true }))
+  downloadMuxer: vi.fn(async () => ({ success: true })),
+  getAppVersion: vi.fn(async () => '1.0.7'),
+  checkForUpdates: vi.fn(async () => ({ success: true }))
 }
 
 describe('Sidebar Navigation', () => {
