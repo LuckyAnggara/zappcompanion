@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react'
 import React from 'react'
 import DownloaderPage from './renderer/src/pages/Downloader'
+import { DownloaderProvider } from './renderer/src/App'
 import '@testing-library/jest-dom/vitest'
 
 // Mock Electron IPC & API
@@ -39,7 +40,11 @@ describe('Downloader Page Transitions', () => {
   })
 
   it('hides input form and shows progress when downloading starts', async () => {
-    render(<DownloaderPage />)
+    render(
+      <DownloaderProvider>
+        <DownloaderPage />
+      </DownloaderProvider>
+    )
     
     // 1. Fetch metadata
     const input = screen.getByPlaceholderText(/Paste link here/i)
@@ -49,7 +54,7 @@ describe('Downloader Page Transitions', () => {
     await waitFor(() => expect(screen.getByText(/Test Video/i)).toBeInTheDocument())
     
     // 2. Start download
-    fireEvent.click(screen.getByRole('button', { name: /Zap Clip/i }))
+    fireEvent.click(screen.getByRole('button', { name: /ZAP CLIP \(DOWNLOAD\)/i }))
     
     // 3. Simulate progress event
     act(() => {
@@ -69,7 +74,11 @@ describe('Downloader Page Transitions', () => {
   })
 
   it('restores button state when download completes', async () => {
-    render(<DownloaderPage />)
+    render(
+      <DownloaderProvider>
+        <DownloaderPage />
+      </DownloaderProvider>
+    )
     
     // 1. Trigger download state
     const input = screen.getByPlaceholderText(/Paste link here/i)
