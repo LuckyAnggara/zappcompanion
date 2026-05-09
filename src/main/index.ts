@@ -78,6 +78,14 @@ app.whenReady().then(() => {
     })
   }
 
+  // Link autoUpdater logger to our UI
+  autoUpdater.logger = {
+    info: (msg) => logUpdate(msg),
+    warn: (msg) => logUpdate(`WARN: ${msg}`),
+    error: (msg) => logUpdate(`ERROR: ${msg}`),
+    debug: (msg) => logUpdate(`DEBUG: ${msg}`)
+  }
+
   if (!is.dev) {
     autoUpdater.on('checking-for-update', () => logUpdate('Checking for application updates...'))
     autoUpdater.on('update-available', (info) => logUpdate(`Update v${info.version} found! Downloading...`))
@@ -102,9 +110,11 @@ app.whenReady().then(() => {
   ipcMain.handle('check-for-updates', async () => {
     if (is.dev) return { success: false, error: 'Update check disabled in dev mode.' }
     try {
-      const result = await autoUpdater.checkForUpdates()
+      logUpdate('Manual update check initiated...')
+      const result = await autoUpdater.checkForUpdatesAndNotify()
       return { success: true, updateInfo: result?.updateInfo }
     } catch (err: any) {
+      logUpdate(`Manual check failed: ${err.message}`)
       return { success: false, error: err.message }
     }
   })
