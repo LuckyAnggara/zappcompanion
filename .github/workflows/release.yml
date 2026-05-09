@@ -11,17 +11,18 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false # Don't cancel Windows if Mac fails
       matrix:
         os: [windows-latest, macos-latest]
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22 # Use a more stable LTS version
           cache: 'npm'
 
       - name: Install Dependencies
