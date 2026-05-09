@@ -148,7 +148,7 @@ app.post('/download', async (req, res) => {
       addHeader: ['referer:youtube.com', 'user-agent:googlebot'],
       mergeOutputFormat: 'mp4',
       newline: true,
-      ffmpegLocation: binDir // Pass the directory containing both ffmpeg and ffprobe
+      ffmpegLocation: ffmpegPath
     }
 
     if (formatId) {

@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
-import { existsSync, mkdirSync, createWriteStream, rmSync } from 'fs'
+import { existsSync, mkdirSync, createWriteStream, rmSync, copyFileSync, chmodSync } from 'fs'
 import pkg from 'follow-redirects'
 const { https } = pkg
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -88,40 +88,33 @@ app.whenReady().then(() => {
     return existsSync(ffmpegPath) && existsSync(ffprobePath)
   })
 
-  ipcMain.handle('download-muxer', async (event) => {
-    let platformSuffix = 'win32-x64'
-    if (process.platform === 'darwin') {
-      platformSuffix = process.arch === 'arm64' ? 'darwin-arm64' : 'darwin-x64'
-    } else if (process.platform === 'linux') {
-      platformSuffix = process.arch === 'arm64' ? 'linux-arm64' : 'linux-x64'
-    }
-    
-    const downloadBinary = (url: string, destPath: string) => {
-      return new Promise<void>((resolve, reject) => {
-        https.get(url, (response) => {
-          if (response.statusCode !== 200) {
-            reject(new Error(`Server returned ${response.statusCode}`))
-            return
-          }
-          const file = createWriteStream(destPath)
-          response.pipe(file)
-          file.on('finish', () => {
-            file.close()
-            if (process.platform !== 'win32') {
-              import('fs').then(fs => fs.chmodSync(destPath, 0o755)).catch(() => {})
-            }
-            resolve()
-          })
-          file.on('error', reject)
-        }).on('error', reject)
-      })
-    }
-
+  ipcMain.handle('download-muxer', async () => {
     try {
-      await Promise.all([
-        downloadBinary(`https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffmpeg-${platformSuffix}`, ffmpegPath),
-        downloadBinary(`https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffprobe-${platformSuffix}`, ffprobePath)
-      ])
+      const bundledFfmpegPath = !app.isPackaged
+        ? join(process.cwd(), 'node_modules', 'ffmpeg-static', ffmpegExeName)
+        : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'ffmpeg-static', ffmpegExeName)
+
+      const bundledFfprobePath = !app.isPackaged
+        ? join(process.cwd(), 'node_modules', 'ffprobe-static', 'bin', process.platform, process.arch, ffprobeExeName)
+        : join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'ffprobe-static', 'bin', process.platform, process.arch, ffprobeExeName)
+
+      if (existsSync(bundledFfmpegPath)) {
+        copyFileSync(bundledFfmpegPath, ffmpegPath)
+      } else {
+        throw new Error('Bundled ffmpeg not found')
+      }
+
+      if (existsSync(bundledFfprobePath)) {
+        copyFileSync(bundledFfprobePath, ffprobePath)
+      } else {
+        throw new Error('Bundled ffprobe not found')
+      }
+
+      if (process.platform !== 'win32') {
+        chmodSync(ffmpegPath, 0o755)
+        chmodSync(ffprobePath, 0o755)
+      }
+
       return { success: true }
     } catch (err: any) {
       return { success: false, error: err.message }
@@ -195,7 +188,7 @@ app.whenReady().then(() => {
       addHeader: ['referer:youtube.com', 'user-agent:googlebot'],
       mergeOutputFormat: 'mp4',
       newline: true,
-      ffmpegLocation: binDir // Pass the directory containing both ffmpeg and ffprobe
+      ffmpegLocation: ffmpegPath // Use our downloaded/managed ffmpeg executable directly
     }
     if (formatId) options.format = formatId === 'best' ? 'bestvideo+bestaudio/best' : `${formatId}+bestaudio/best`
 
