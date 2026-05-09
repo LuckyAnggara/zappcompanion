@@ -111,7 +111,15 @@ app.whenReady().then(() => {
     if (is.dev) return { success: false, error: 'Update check disabled in dev mode.' }
     try {
       logUpdate('Manual update check initiated...')
-      const result = await autoUpdater.checkForUpdatesAndNotify()
+      const result = await autoUpdater.checkForUpdates()
+      
+      if (result && result.updateInfo.version !== app.getVersion()) {
+        logUpdate(`New version v${result.updateInfo.version} identified. Starting download...`)
+        autoUpdater.downloadUpdate()
+      } else {
+        logUpdate('No newer version found.')
+      }
+
       return { success: true, updateInfo: result?.updateInfo }
     } catch (err: any) {
       logUpdate(`Manual check failed: ${err.message}`)

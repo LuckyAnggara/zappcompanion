@@ -42,7 +42,8 @@
       {
         "provider": "github",
         "owner": "LuckyAnggara",
-        "repo": "zappcompanion"
+        "repo": "zappcompanion",
+        "releaseType": "release"
       }
     ],
     "files": [
