@@ -1,6 +1,6 @@
 {
   "name": "zap-clipper-companion",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "High-performance local processing engine for Zap Clipper.",
   "author": "Zap Clipper Team",
   "main": "./out/main/index.js",
