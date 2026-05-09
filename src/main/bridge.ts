@@ -119,7 +119,7 @@ app.get('/metadata', async (req, res) => {
 })
 
 app.post('/download', async (req, res) => {
-  const { url, formatId } = req.body
+  const { url, formatId, sectionStart, sectionEnd } = req.body
   logToUI(`Incoming request: POST /download (URL: ${url})`)
 
   if (!url || !url.startsWith('http')) {
@@ -153,6 +153,13 @@ app.post('/download', async (req, res) => {
 
     if (formatId) {
       options.format = formatId === 'best' ? 'bestvideo+bestaudio/best' : `${formatId}+bestaudio/best`
+    }
+
+    if (sectionStart || sectionEnd) {
+      const start = sectionStart || '0'
+      const end = sectionEnd || 'inf'
+      options.downloadSections = `*${start}-${end}`
+      options.forceKeyframesAtCuts = true // Recommended for section downloads
     }
 
     progressMap.set(url, { progress: 0, status: 'downloading' })

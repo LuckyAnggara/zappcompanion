@@ -178,7 +178,7 @@ app.whenReady().then(() => {
     } catch (err: any) { return { success: false, error: err.message } }
   })
 
-  ipcMain.on('download-video', (event, { url, formatId, metadata }) => {
+  ipcMain.on('download-video', (event, { url, formatId, metadata, sectionStart, sectionEnd }) => {
     const settings = store.get('settings')
     const downloadPath = settings.downloadPath || app.getPath('downloads')
     const options: any = {
@@ -191,6 +191,13 @@ app.whenReady().then(() => {
       ffmpegLocation: ffmpegPath // Use our downloaded/managed ffmpeg executable directly
     }
     if (formatId) options.format = formatId === 'best' ? 'bestvideo+bestaudio/best' : `${formatId}+bestaudio/best`
+
+    if (sectionStart || sectionEnd) {
+      const start = sectionStart || '0'
+      const end = sectionEnd || 'inf'
+      options.downloadSections = `*${start}-${end}`
+      options.forceKeyframesAtCuts = true // Recommended for section downloads
+    }
 
     const dlProcess = core.exec(url, options)
     dlProcess.stdout?.on('data', (data: string) => {

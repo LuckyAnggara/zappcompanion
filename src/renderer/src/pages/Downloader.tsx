@@ -16,6 +16,8 @@ export default function DownloaderPage(): React.JSX.Element {
   const [progress, setProgress] = useState<number | null>(null)
   const [selectedFormat, setSelectedFormat] = useState('best')
   const [activeDownloadMeta, setActiveDownloadMeta] = useState<any>(null)
+  const [sectionStart, setSectionStart] = useState('')
+  const [sectionEnd, setSectionEnd] = useState('')
 
   const isDownloading = progress !== null
 
@@ -64,11 +66,13 @@ export default function DownloaderPage(): React.JSX.Element {
     setLoading(true)
     setProgress(null)
     setMetadata(null)
+    setSectionStart('')
+    setSectionEnd('')
     setStatus(`Analyzing resource: ${url}`)
     try {
       const data = await window.api.getMetadata(url)
       setMetadata(data)
-      setStatus('Analysis complete. Select resolution and clip.')
+      setStatus('Analysis complete. Select options and clip.')
       setLogs(prev => [...prev, `[INFO] Resource analysis successful for ${url}`])
     } catch (err: any) {
       setStatus(`System Error: ${err.message}`)
@@ -88,7 +92,9 @@ export default function DownloaderPage(): React.JSX.Element {
       window.electron.ipcRenderer.send('download-video', { 
         url, 
         formatId: selectedFormat,
-        metadata: meta
+        metadata: meta,
+        sectionStart: sectionStart.trim() !== '' ? sectionStart.trim() : undefined,
+        sectionEnd: sectionEnd.trim() !== '' ? sectionEnd.trim() : undefined
       })
       
       setMetadata(null)
@@ -130,20 +136,44 @@ export default function DownloaderPage(): React.JSX.Element {
                   <h3>{metadata.title}</h3>
                   <p>Source: {metadata.uploader}</p>
                   
-                  <div className="quality-selector">
-                    <label>Select Resolution:</label>
-                    <select 
-                      value={selectedFormat} 
-                      onChange={(e) => setSelectedFormat(e.target.value)}
-                      className="brutalist-select"
-                    >
-                      <option value="best">Highest (Auto)</option>
-                      {availableFormats.map((f) => (
-                        <option key={f.format_id} value={f.format_id}>
-                          {f.resolution} ({f.ext})
-                        </option>
-                      ))}
-                    </select>
+                  <div className="options-grid">
+                    <div className="quality-selector">
+                      <label>Select Resolution:</label>
+                      <select 
+                        value={selectedFormat} 
+                        onChange={(e) => setSelectedFormat(e.target.value)}
+                        className="brutalist-select"
+                      >
+                        <option value="best">Highest (Auto)</option>
+                        {availableFormats.map((f) => (
+                          <option key={f.format_id} value={f.format_id}>
+                            {f.resolution} ({f.ext})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="trim-selector">
+                      <label>Trim Video (Optional):</label>
+                      <div className="trim-inputs">
+                        <input 
+                          type="text" 
+                          placeholder="Start (e.g. 01:20)" 
+                          value={sectionStart}
+                          onChange={(e) => setSectionStart(e.target.value)}
+                          className="brutalist-input small-input"
+                        />
+                        <span className="trim-separator">to</span>
+                        <input 
+                          type="text" 
+                          placeholder="End (e.g. 02:45)" 
+                          value={sectionEnd}
+                          onChange={(e) => setSectionEnd(e.target.value)}
+                          className="brutalist-input small-input"
+                        />
+                      </div>
+                      <span className="trim-help">Format: SS or MM:SS or HH:MM:SS</span>
+                    </div>
                   </div>
 
                   <button onClick={handleDownload} className="brutalist-button download-btn">
@@ -208,6 +238,56 @@ export default function DownloaderPage(): React.JSX.Element {
         @keyframes scaleIn {
           from { transform: scale(0.95); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
+        }
+
+        .options-grid {
+          display: flex;
+          gap: 20px;
+          margin: 15px 0;
+        }
+
+        .quality-selector, .trim-selector {
+          flex: 1;
+          background-color: var(--gray);
+          border: 3px solid var(--black);
+          padding: 15px;
+        }
+        
+        .trim-selector {
+          background-color: var(--yellow);
+        }
+
+        .quality-selector label, .trim-selector label {
+          display: block;
+          font-weight: bold;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+        }
+
+        .trim-inputs {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .small-input {
+          padding: 8px;
+          font-size: 0.9rem;
+          border: 3px solid var(--black);
+          width: 100%;
+        }
+
+        .trim-separator {
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+        
+        .trim-help {
+          display: block;
+          margin-top: 5px;
+          font-size: 0.75rem;
+          font-style: italic;
+          color: #555;
         }
 
         /* Active Download View */
@@ -291,3 +371,4 @@ export default function DownloaderPage(): React.JSX.Element {
     </div>
   )
 }
+
