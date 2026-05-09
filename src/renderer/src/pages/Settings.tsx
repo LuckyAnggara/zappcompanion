@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react'
 interface AppSettings {
   downloadPath: string
   devMode: boolean
+  unlockQuality: boolean
 }
 
 export default function SettingsPage(): React.JSX.Element {
-  const [settings, setSettings] = useState<AppSettings>({ downloadPath: '', devMode: false })
+  const [settings, setSettings] = useState<AppSettings>({ downloadPath: '', devMode: false, unlockQuality: false })
   const [engineVersion, setEngineVersion] = useState<string>('Checking...')
   const [muxerStatus, setMuxerStatus] = useState<string>('Checking...')
   const [updating, setUpdating] = useState(false)
@@ -120,6 +121,23 @@ export default function SettingsPage(): React.JSX.Element {
             {updateMsg}
           </div>
         )}
+
+        <div className="setting-card">
+          <h3>Download Preferences</h3>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <input 
+              type="checkbox" 
+              checked={settings.unlockQuality || false} 
+              onChange={async (e) => {
+                const newSettings = { ...settings, unlockQuality: e.target.checked }
+                await window.api.setSettings(newSettings)
+                setSettings(newSettings)
+              }} 
+              style={{ width: '20px', height: '20px' }}
+            />
+            Unlock High Quality (Allow &gt; 1080p if available)
+          </label>
+        </div>
 
         <div className="setting-card">
           <h3>Developer Options</h3>

@@ -22,6 +22,7 @@ window.electron = {
 
 // @ts-expect-error - mock window
 window.api = {
+  getSettings: vi.fn(async () => ({ downloadPath: '', devMode: false, unlockQuality: false })),
   getMetadata: vi.fn(async () => ({
     title: 'Test Video',
     thumbnail: 'test.jpg',

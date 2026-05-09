@@ -40,11 +40,22 @@ export default function DownloaderPage(): React.JSX.Element {
   const [sectionStart, setSectionStart] = useState('')
   const [sectionEnd, setSectionEnd] = useState('')
   const [sliderValues, setSliderValues] = useState<[number, number]>([0, 100])
+  const [unlockQuality, setUnlockQuality] = useState(false)
 
   const isDownloading = progress !== null
 
   useEffect(() => {
     if (!window.electron) return
+
+    window.api.getSettings().then((s) => {
+      setUnlockQuality(s?.unlockQuality || false)
+    })
+
+    const handleSettingsUpdate = async () => {
+      const s = await window.api.getSettings()
+      setUnlockQuality(s?.unlockQuality || false)
+    }
+    window.addEventListener('settings-updated', handleSettingsUpdate)
 
     const handleComplete = (_event: any, arg: any): void => {
       setStatus(`Success: Processed ${arg.url}`)
@@ -161,6 +172,11 @@ export default function DownloaderPage(): React.JSX.Element {
   const availableFormats = metadata?.formats
     ? metadata.formats
         .filter((f) => f.vcodec !== 'none' && f.resolution)
+        .filter((f) => {
+          if (unlockQuality) return true
+          const height = parseInt(f.height) || parseInt((f.resolution || '').split('x')[1]) || 0
+          return height <= 1080
+        })
         .filter((v, i, a) => a.findIndex((t) => t.resolution === v.resolution) === i)
         .sort((a, b) => (parseInt(b.height) || 0) - (parseInt(a.height) || 0))
     : []

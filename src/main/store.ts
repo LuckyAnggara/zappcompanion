@@ -3,6 +3,7 @@ import Store from 'electron-store'
 interface AppSettings {
   downloadPath: string
   devMode: boolean
+  unlockQuality: boolean
 }
 
 interface DownloadHistory {
@@ -25,7 +26,8 @@ const store = new Store<Schema>({
   defaults: {
     settings: {
       downloadPath: '',
-      devMode: false
+      devMode: false,
+      unlockQuality: false
     },
     history: []
   }

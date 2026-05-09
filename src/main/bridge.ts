@@ -151,8 +151,11 @@ app.post('/download', async (req, res) => {
       ffmpegLocation: ffmpegPath
     }
 
-    if (formatId) {
-      options.format = formatId === 'best' ? 'bestvideo+bestaudio/best' : `${formatId}+bestaudio/best`
+    const bestFormat = settings.unlockQuality ? 'bestvideo+bestaudio/best' : 'bestvideo[height<=1080]+bestaudio/best'
+    if (formatId && formatId !== 'best') {
+      options.format = `${formatId}+bestaudio/best`
+    } else {
+      options.format = bestFormat
     }
 
     if (sectionStart || sectionEnd) {
