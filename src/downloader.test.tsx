@@ -6,6 +6,13 @@ import DownloaderPage from './renderer/src/pages/Downloader'
 import { DownloaderProvider } from './renderer/src/App'
 import '@testing-library/jest-dom/vitest'
 
+// Mock ResizeObserver for Radix UI Slider
+global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+}
+
 // Mock Electron IPC & API
 let ipcHandlers: Record<string, any> = {}
 // @ts-expect-error - mock window
@@ -28,8 +35,10 @@ window.api = {
     title: 'Test Video',
     thumbnail: 'test.jpg',
     uploader: 'Test Creator',
-    formats: [{ format_id: '137', resolution: '1080p', ext: 'mp4', vcodec: 'avc1' }]
+    formats: [{ format_id: '137', resolution: '1080p', ext: 'mp4', vcodec: 'avc1' }],
+    duration: 3600
   })),
+  getAppVersion: vi.fn(async () => '1.1.3'),
 }
 
 describe('Downloader Page Transitions', () => {
@@ -39,7 +48,7 @@ describe('Downloader Page Transitions', () => {
     ipcHandlers = {}
   })
 
-  it('hides input form and shows progress when downloading starts', async () => {
+  it('shows persistent metadata and progress when downloading starts', async () => {
     render(
       <DownloaderProvider>
         <DownloaderPage />
@@ -65,11 +74,13 @@ describe('Downloader Page Transitions', () => {
     
     // 4. Verify UI state
     await waitFor(() => {
-      // Input form should remain visible but disabled
-      expect(screen.getByPlaceholderText(/Paste link here/i)).toBeDisabled()
-      // Progress bar should be visible at bottom
+      // Input form should remain but button should be 'Processing...'
+      expect(screen.getByRole('button', { name: /Processing.../i })).toBeDisabled()
+      // Progress bar should be visible
       expect(screen.getByText(/50.5%/i)).toBeInTheDocument()
       expect(screen.getByText(/ACTIVE DOWNLOAD PROCESS/i)).toBeInTheDocument()
+      // Metadata should still be visible
+      expect(screen.getByText(/Test Video/i)).toBeInTheDocument()
     })
   })
 
@@ -93,7 +104,7 @@ describe('Downloader Page Transitions', () => {
       }
     })
     
-    expect(screen.getByRole('button', { name: /Processing.../i })).toBeDisabled()
+    await waitFor(() => expect(screen.getByRole('button', { name: /Processing.../i })).toBeInTheDocument())
 
     // 2. Simulate complete
     act(() => {

@@ -3,7 +3,7 @@ import * as Slider from '@radix-ui/react-slider'
 import { useDownloader } from '../App'
 
 const formatTime = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) return ''
+  if (isNaN(seconds) || seconds < 0) return '00:00'
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
   const s = Math.floor(seconds % 60)
@@ -44,7 +44,7 @@ export default function DownloaderPage(): React.JSX.Element {
       setPartialState({
         metadata: data,
         sliderValues: [0, duration],
-        sectionStart: '00:00',
+        sectionStart: '00:00:00',
         sectionEnd: formatTime(duration),
         status: 'Analysis complete. Select resolution and clip.',
         logs: [...logs, `[INFO] Resource analysis successful for ${url}`]
@@ -80,22 +80,20 @@ export default function DownloaderPage(): React.JSX.Element {
 
   const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
+    setPartialState({ sectionStart: val })
     const parsed = parseTime(val)
     if (parsed >= 0 && parsed <= sliderValues[1]) {
       setPartialState({ sectionStart: val, sliderValues: [parsed, sliderValues[1]] })
-    } else {
-      setPartialState({ sectionStart: val })
     }
   }
 
   const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
+    setPartialState({ sectionEnd: val })
     const parsed = parseTime(val)
     const duration = metadata?.duration || 100
     if (parsed >= sliderValues[0] && parsed <= duration) {
       setPartialState({ sectionEnd: val, sliderValues: [sliderValues[0], parsed] })
-    } else {
-      setPartialState({ sectionEnd: val })
     }
   }
 
@@ -107,14 +105,11 @@ export default function DownloaderPage(): React.JSX.Element {
     })
   }
 
+  const newDurationSeconds = sliderValues[1] - sliderValues[0]
+
   const availableFormats = metadata?.formats
     ? metadata.formats
         .filter((f) => f.vcodec !== 'none' && f.resolution)
-        .filter((f) => {
-          // Note: unlockQuality is also global but we need to fetch it or pass it
-          // For now let's assume we fetch settings in App and store it in state too
-          return true // Simplified for this pass
-        })
         .filter((v, i, a) => a.findIndex((t) => t.resolution === v.resolution) === i)
         .sort((a, b) => (parseInt(b.height) || 0) - (parseInt(a.height) || 0))
     : []
@@ -143,6 +138,7 @@ export default function DownloaderPage(): React.JSX.Element {
             <div className="preview-layout-top">
               <div className="thumbnail-container">
                 <img src={metadata.thumbnail} alt="Thumbnail" className="thumbnail-16-9" />
+                <div className="duration-overlay">{formatTime(metadata.duration || 0)}</div>
               </div>
               <div className="details-container">
                 <h3>{metadata.title}</h3>
@@ -167,59 +163,73 @@ export default function DownloaderPage(): React.JSX.Element {
               </div>
             </div>
 
-            <div className="trim-section-bottom">
-              <div className="trim-selector">
-                <label>Trim Video (Optional):</label>
+            <div className="timeline-section">
+              <div className="timeline-header">
+                 <label>CLIP TIMELINE</label>
+                 <div className="new-duration-badge">
+                   NEW DURATION: {formatTime(newDurationSeconds)}
+                 </div>
+              </div>
+              
+              <div className="timeline-wrapper">
+                <div className="timeline-ruler">
+                   {/* Visual ticks for the timeline */}
+                   {[...Array(10)].map((_, i) => <div key={i} className="ruler-tick"></div>)}
+                </div>
                 
-                {metadata.duration ? (
-                  <div className="slider-container">
-                    <Slider.Root 
-                      className="SliderRoot" 
-                      value={sliderValues} 
-                      max={metadata.duration} 
-                      step={1}
-                      onValueChange={handleSliderChange}
-                      disabled={isDownloading}
-                    >
-                      <Slider.Track className="SliderTrack">
-                        <Slider.Range className="SliderRange" />
-                      </Slider.Track>
-                      <Slider.Thumb className="SliderThumb" aria-label="Start time" />
-                      <Slider.Thumb className="SliderThumb" aria-label="End time" />
-                    </Slider.Root>
-                  </div>
-                ) : null}
+                <Slider.Root 
+                  className="TimelineRoot" 
+                  value={sliderValues} 
+                  max={metadata.duration || 100} 
+                  step={1}
+                  onValueChange={handleSliderChange}
+                  disabled={isDownloading}
+                >
+                  <Slider.Track className="TimelineTrack">
+                    <Slider.Range className="TimelineRange" />
+                  </Slider.Track>
+                  <Slider.Thumb className="TimelineThumb" aria-label="Start point">
+                     <div className="thumb-handle-line"></div>
+                     <div className="thumb-label">START: {formatTime(sliderValues[0])}</div>
+                  </Slider.Thumb>
+                  <Slider.Thumb className="TimelineThumb" aria-label="End point">
+                     <div className="thumb-handle-line"></div>
+                     <div className="thumb-label end">END: {formatTime(sliderValues[1])}</div>
+                  </Slider.Thumb>
+                </Slider.Root>
+              </div>
 
-                <div className="trim-inputs">
+              <div className="trim-manual-inputs">
+                <div className="manual-field">
+                  <label>Manual Start</label>
                   <input 
                     type="text" 
-                    placeholder="Start (e.g. 01:20)" 
                     value={sectionStart}
                     onChange={handleStartChange}
                     className="brutalist-input small-input"
                     disabled={isDownloading}
                   />
-                  <span className="trim-separator">to</span>
+                </div>
+                <div className="manual-field">
+                  <label>Manual End</label>
                   <input 
                     type="text" 
-                    placeholder="End (e.g. 02:45)" 
                     value={sectionEnd}
                     onChange={handleEndChange}
                     className="brutalist-input small-input"
                     disabled={isDownloading}
                   />
                 </div>
-                <span className="trim-help">Format: SS or MM:SS or HH:MM:SS</span>
               </div>
-
-              <button 
-                onClick={handleDownload} 
-                className="brutalist-button zap-clip-btn"
-                disabled={isDownloading}
-              >
-                {isDownloading ? 'Processing...' : 'ZAP CLIP (DOWNLOAD)'}
-              </button>
             </div>
+
+            <button 
+              onClick={handleDownload} 
+              className="brutalist-button zap-clip-btn"
+              disabled={isDownloading}
+            >
+              {isDownloading ? 'PROCESSING...' : 'ZAP CLIP (DOWNLOAD)'}
+            </button>
           </div>
         )}
 
@@ -256,26 +266,127 @@ export default function DownloaderPage(): React.JSX.Element {
         .downloader-page { display: flex; flex-direction: column; gap: 15px; }
         .scale-in { animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
         .preview-layout-top { display: flex; gap: 25px; margin-bottom: 20px; align-items: flex-start; }
-        .thumbnail-container { flex: 0 0 350px; }
+        .thumbnail-container { flex: 0 0 350px; position: relative; }
         .thumbnail-16-9 { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: var(--border-thick) solid var(--black); box-shadow: 8px 8px 0px var(--black); }
+        .duration-overlay { position: absolute; bottom: 15px; right: 15px; background: var(--black); color: var(--white); padding: 2px 8px; font-weight: 900; font-size: 0.8rem; border: 2px solid var(--white); }
+        
         .details-container { flex: 1; display: flex; flex-direction: column; }
         .details-container h3 { margin: 0 0 10px 0; font-size: 1.6rem; text-transform: uppercase; line-height: 1.2; }
         .uploader-name { font-weight: bold; color: var(--blue); margin-bottom: 15px; }
         .quality-selector { background-color: var(--gray); border: 3px solid var(--black); padding: 12px; box-shadow: 6px 6px 0px var(--black); }
         .quality-selector label { display: block; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; font-size: 0.85rem; }
-        .trim-section-bottom { display: flex; gap: 20px; align-items: flex-end; border-top: 3px dashed var(--black); padding-top: 20px; }
-        .trim-selector { flex: 1; background-color: var(--yellow); border: var(--border-thick) solid var(--black); padding: 15px; box-shadow: 8px 8px 0px var(--black); }
-        .trim-selector label { display: block; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; font-size: 0.9rem; }
-        .zap-clip-btn { flex: 0 0 250px; height: 100px; background-color: var(--blue); color: var(--white); border: var(--border-thick) solid var(--black) !important; box-shadow: 8px 8px 0px var(--black); font-size: 1.5rem !important; line-height: 1; transition: all 0.1s; }
-        .zap-clip-btn:hover:not(:disabled) { background-color: var(--orange); transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--black); }
-        .zap-clip-btn:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: 0px 0px 0px var(--black); }
-        .active-progress-footer { background-color: var(--black); color: var(--white); padding: 20px; border: var(--border-thick) solid var(--black); box-shadow: 10px 10px 0px var(--orange); margin-top: 10px; }
-        .progress-header { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 10px; }
-        .status-text { font-family: monospace; font-size: 0.9rem; color: var(--yellow); margin-bottom: 15px; }
-        .progress-container.large { height: 35px; border: 3px solid var(--white); }
-        .spinner.small { width: 20px; height: 20px; border-width: 3px; }
-        .metadata-preview { box-shadow: 15px 15px 0px var(--blue); }
+
+        /* Timeline Section */
+        .timeline-section {
+          background-color: var(--white);
+          border: var(--border-thick) solid var(--black);
+          padding: 25px;
+          margin-bottom: 20px;
+          box-shadow: 10px 10px 0px var(--black);
+        }
+
+        .timeline-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 25px;
+        }
+
+        .timeline-header label { font-weight: 900; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 1px; }
+        
+        .new-duration-badge {
+          background-color: var(--black);
+          color: var(--yellow);
+          padding: 8px 20px;
+          font-weight: 900;
+          border: 4px solid var(--orange);
+          font-size: 1rem;
+        }
+
+        .timeline-wrapper {
+          position: relative;
+          margin-bottom: 60px;
+          padding: 0 15px;
+        }
+
+        .timeline-ruler {
+          position: absolute;
+          top: 15px;
+          left: 15px;
+          right: 15px;
+          height: 12px;
+          display: flex;
+          justify-content: space-between;
+          z-index: 0;
+          pointer-events: none;
+        }
+
+        .ruler-tick {
+          width: 2px;
+          height: 100%;
+          background-color: var(--black);
+          opacity: 0.2;
+        }
+
+        .TimelineRoot { position: relative; display: flex; align-items: center; user-select: none; touch-action: none; width: 100%; height: 40px; z-index: 10; }
+        .TimelineTrack { background-color: #eee; border: 3px solid var(--black); position: relative; flex-grow: 1; height: 16px; box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1); }
+        .TimelineRange { position: absolute; background-color: var(--blue); height: 100%; border-left: 2px solid var(--black); border-right: 2px solid var(--black); }
+        
+        .TimelineThumb {
+          display: block;
+          width: 32px;
+          height: 48px;
+          background-color: var(--orange);
+          border: 4px solid var(--black);
+          cursor: grab;
+          position: relative;
+          box-shadow: 4px 4px 0px var(--black);
+        }
+        .TimelineThumb:hover { background-color: var(--white); }
+        .TimelineThumb:focus { outline: none; box-shadow: 0 0 0 4px var(--yellow), 4px 4px 0px var(--black); }
+
+        .thumb-handle-line {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 4px;
+          height: 20px;
+          background: var(--black);
+        }
+
+        .thumb-label {
+          position: absolute;
+          top: 55px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: var(--black);
+          color: var(--white);
+          font-size: 0.8rem;
+          padding: 4px 10px;
+          font-weight: 900;
+          white-space: nowrap;
+          border: 2px solid var(--white);
+          box-shadow: 3px 3px 0px var(--orange);
+        }
+        .thumb-label.end { background: var(--blue); box-shadow: 3px 3px 0px var(--black); }
+
+        .trim-manual-inputs { display: flex; gap: 20px; border-top: 3px dashed var(--gray); padding-top: 20px; }
+        .manual-field { flex: 1; }
+        .manual-field label { display: block; font-size: 0.9rem; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; }
+        .small-input { border: 3px solid var(--black); padding: 12px; font-weight: 900; font-size: 1.1rem; }
+
+        .zap-clip-btn { width: 100%; height: 100px; background-color: var(--blue); color: var(--white); border: var(--border-thick) solid var(--black) !important; box-shadow: 10px 10px 0px var(--black); font-size: 2.2rem !important; font-weight: 900; margin-top: 15px; transition: all 0.1s; letter-spacing: 2px; }
+        .zap-clip-btn:hover:not(:disabled) { background-color: var(--orange); transform: translate(-4px, -4px); box-shadow: 14px 14px 0px var(--black); }
+        .zap-clip-btn:active:not(:disabled) { transform: translate(6px, 6px); box-shadow: 0px 0px 0px var(--black); }
+
+        .active-progress-footer { background-color: var(--black); color: var(--white); padding: 25px; border: var(--border-thick) solid var(--black); box-shadow: 15px 15px 0px var(--orange); margin-top: 15px; }
+        .progress-header { display: flex; align-items: center; gap: 15px; font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 15px; }
+        .status-text { font-family: monospace; font-size: 1rem; color: var(--yellow); margin-bottom: 20px; text-transform: uppercase; }
+        .progress-container.large { height: 45px; border: 4px solid var(--white); background-color: #222; }
+        .spinner.small { width: 24px; height: 24px; border-width: 4px; }
       `}</style>
     </div>
   )
