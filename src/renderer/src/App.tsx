@@ -86,7 +86,7 @@ function App(): React.JSX.Element {
   return (
     <Router>
       <div className="app-container-root">
-        {!engineReady && (
+        {!engineReady ? (
           <div className="startup-overlay">
             <div className="startup-modal">
               <div className="startup-header">
@@ -100,36 +100,36 @@ function App(): React.JSX.Element {
               </div>
             </div>
           </div>
-        )}
-
-        <div className="app-layout">
-          <aside className="sidebar">
-            <header className="sidebar-logo">
-              <div className="logo-box">ZC</div>
-            </header>
-            <nav className="nav-menu">
-              <NavItem to="/downloader" icon={Download} label="Clipper" />
-              <NavItem to="/library" icon={Library} label="Library" />
-              <NavItem to="/settings" icon={Settings} label="Settings" />
-              {devMode && <NavItem to="/docs" icon={FileText} label="Documentation" />}
-            </nav>
-          </aside>
-
-          <main className="content">
-            <div className="brutalist-container">
-              <header className="brutalist-header">
-                <h1>ZC Companion</h1>
+        ) : (
+          <div className="app-layout scale-in">
+            <aside className="sidebar">
+              <header className="sidebar-logo">
+                <div className="logo-box">ZC</div>
               </header>
-              <Routes>
-                <Route path="/" element={<Navigate to="/downloader" replace />} />
-                <Route path="/downloader" element={<DownloaderPage />} />
-                <Route path="/library" element={<LibraryPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/docs" element={<DocsPage />} />
-              </Routes>
-            </div>
-          </main>
-        </div>
+              <nav className="nav-menu">
+                <NavItem to="/downloader" icon={Download} label="Clipper" />
+                <NavItem to="/library" icon={Library} label="Library" />
+                <NavItem to="/settings" icon={Settings} label="Settings" />
+                {devMode && <NavItem to="/docs" icon={FileText} label="Documentation" />}
+              </nav>
+            </aside>
+
+            <main className="content">
+              <div className="brutalist-container">
+                <header className="brutalist-header">
+                  <h1>ZC Companion</h1>
+                </header>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/downloader" replace />} />
+                  <Route path="/downloader" element={<DownloaderPage />} />
+                  <Route path="/library" element={<LibraryPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/docs" element={<DocsPage />} />
+                </Routes>
+              </div>
+            </main>
+          </div>
+        )}
       </div>
     </Router>
   )

@@ -159,7 +159,7 @@ export default function SettingsPage(): React.JSX.Element {
 
         <div className="setting-card">
           <h3>About App</h3>
-          <p>Zap Clipper Companion v1.0.0</p>
+          <p>Zap Clipper Companion v1.0.5</p>
           <p>High-performance local processing engine.</p>
         </div>
       </div>
