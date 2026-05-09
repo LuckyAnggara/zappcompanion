@@ -10,6 +10,7 @@ export default function SettingsPage(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>({ downloadPath: '', devMode: false, unlockQuality: false })
   const [engineVersion, setEngineVersion] = useState<string>('Checking...')
   const [muxerStatus, setMuxerStatus] = useState<string>('Checking...')
+  const [appVersion, setAppVersion] = useState<string>('...')
   const [updating, setUpdating] = useState(false)
   const [updateMsg, setUpdateMsg] = useState('')
 
@@ -17,8 +18,10 @@ export default function SettingsPage(): React.JSX.Element {
     if (window.api) {
       const s = await window.api.getSettings()
       setSettings(s)
-      const v = await window.api.getYtDlpVersion()
-      setEngineVersion(v)
+      const ev = await window.api.getYtDlpVersion()
+      setEngineVersion(ev)
+      const av = await window.api.getAppVersion()
+      setAppVersion(av)
       const hasMuxer = await window.api.checkMuxer()
       setMuxerStatus(hasMuxer ? 'Ready (Installed)' : 'Missing')
     }
@@ -27,6 +30,23 @@ export default function SettingsPage(): React.JSX.Element {
   useEffect(() => {
     loadData()
   }, [])
+
+  const handleManualUpdateCheck = async (): Promise<void> => {
+    setUpdating(true)
+    setUpdateMsg('Checking for system updates...')
+    try {
+      const res = await window.api.checkForUpdates()
+      if (res.success) {
+        setUpdateMsg('Check complete. See activity log for details.')
+      } else {
+        setUpdateMsg(`Check failed: ${res.error}`)
+      }
+    } catch (err: any) {
+      setUpdateMsg(`Error: ${err.message}`)
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   const handleSelectDir = async (): Promise<void> => {
     const path = await window.api.selectDirectory()
@@ -116,12 +136,6 @@ export default function SettingsPage(): React.JSX.Element {
           </button>
         </div>
 
-        {updateMsg && (
-          <div className="status-banner" style={{ marginTop: '0', backgroundColor: 'var(--yellow)', color: 'var(--black)' }}>
-            {updateMsg}
-          </div>
-        )}
-
         <div className="setting-card">
           <h3>Download Preferences</h3>
           <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold' }}>
@@ -158,8 +172,25 @@ export default function SettingsPage(): React.JSX.Element {
         </div>
 
         <div className="setting-card">
+          <h3>System Optimization</h3>
+          <p>App Version: <strong>v{appVersion}</strong></p>
+          <button 
+            onClick={handleManualUpdateCheck} 
+            className="btn-black" 
+            disabled={updating}
+          >
+            {updating ? 'Checking...' : 'Check for Updates'}
+          </button>
+          {updateMsg && (
+            <div className="status-banner" style={{ marginTop: '15px', backgroundColor: 'var(--yellow)', color: 'var(--black)' }}>
+              {updateMsg}
+            </div>
+          )}
+        </div>
+
+        <div className="setting-card">
           <h3>About App</h3>
-          <p>Zap Clipper Companion v1.0.5</p>
+          <p>Zap Clipper Companion</p>
           <p>High-performance local processing engine.</p>
         </div>
       </div>

@@ -69,19 +69,46 @@ app.whenReady().then(() => {
     console.log(`Bridge server listening on port ${BRIDGE_PORT}`)
   })
 
+  // Auto Update & Logging Logic
+  const logUpdate = (msg: string) => {
+    const timestamp = new Date().toLocaleTimeString()
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('api-log', `[SYSTEM] ${timestamp} - ${msg}`)
+    })
+  }
+
   if (!is.dev) {
-    autoUpdater.checkForUpdatesAndNotify()
-    autoUpdater.on('update-downloaded', () => {
+    autoUpdater.on('checking-for-update', () => logUpdate('Checking for application updates...'))
+    autoUpdater.on('update-available', (info) => logUpdate(`Update v${info.version} found! Downloading...`))
+    autoUpdater.on('update-not-available', () => logUpdate('Application is up to date.'))
+    autoUpdater.on('error', (err) => logUpdate(`Update error: ${err.message}`))
+    
+    autoUpdater.on('update-downloaded', (info) => {
+      logUpdate(`Update v${info.version} downloaded and ready.`)
       dialog.showMessageBox({
         type: 'info',
         title: 'Update Ready',
-        message: 'A new version has been downloaded. Restart the app to apply the update?',
-        buttons: ['Restart', 'Later']
+        message: `Version ${info.version} has been downloaded. Restart the app to apply the update?`,
+        buttons: ['Restart Now', 'Later']
       }).then((result) => {
         if (result.response === 0) autoUpdater.quitAndInstall()
       })
     })
+
+    autoUpdater.checkForUpdatesAndNotify()
   }
+
+  ipcMain.handle('check-for-updates', async () => {
+    if (is.dev) return { success: false, error: 'Update check disabled in dev mode.' }
+    try {
+      const result = await autoUpdater.checkForUpdates()
+      return { success: true, updateInfo: result?.updateInfo }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('get-app-version', () => app.getVersion())
 
   // Assets Management IPC
   ipcMain.handle('check-muxer', async () => {

@@ -16,6 +16,8 @@ declare global {
       updateYtDlp: () => Promise<{ success: boolean; version?: string; error?: string }>
       checkMuxer: () => Promise<boolean>
       downloadMuxer: () => Promise<{ success: boolean; error?: string }>
+      getAppVersion: () => Promise<string>
+      checkForUpdates: () => Promise<{ success: boolean; updateInfo?: any; error?: string }>
     }
   }
 }

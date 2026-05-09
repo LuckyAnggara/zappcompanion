@@ -14,7 +14,9 @@ const api = {
   getYtDlpVersion: () => ipcRenderer.invoke('get-yt-dlp-version'),
   updateYtDlp: () => ipcRenderer.invoke('update-yt-dlp'),
   checkMuxer: () => ipcRenderer.invoke('check-muxer'),
-  downloadMuxer: () => ipcRenderer.invoke('download-muxer')
+  downloadMuxer: () => ipcRenderer.invoke('download-muxer'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates')
 }
 
 if (process.contextIsolated) {
