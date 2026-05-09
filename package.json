@@ -40,8 +40,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "username-github-anda",
-        "repo": "nama-repo-anda"
+        "owner": "LuckyAnggara",
+        "repo": "zappcompanion"
       }
     ],
     "files": [

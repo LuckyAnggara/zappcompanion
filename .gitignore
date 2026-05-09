@@ -6,3 +6,7 @@ out
 .env
 .env.*
 ! .env.example
+*.mp4
+*.webm
+*.mkv
+*.m4a

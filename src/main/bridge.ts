@@ -158,11 +158,25 @@ app.post('/download', async (req, res) => {
       options.format = bestFormat
     }
 
+    let targetDuration = 0
     if (sectionStart || sectionEnd) {
       const start = sectionStart || '0'
       const end = sectionEnd || 'inf'
       options.downloadSections = `*${start}-${end}`
       options.forceKeyframesAtCuts = true // Recommended for section downloads
+
+      try {
+        const parseTime = (t: string) => {
+          if (!t || t === 'inf') return 0
+          const p = t.split(':').map(Number)
+          if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2]
+          if (p.length === 2) return p[0] * 60 + p[1]
+          return p[0] || 0
+        }
+        const s = parseTime(start)
+        const e = parseTime(end)
+        if (e > s) targetDuration = e - s
+      } catch (e) {}
     }
 
     progressMap.set(url, { progress: 0, status: 'downloading' })
@@ -174,6 +188,21 @@ app.post('/download', async (req, res) => {
       const match = line.match(/\[download\]\s+(\d+\.\d+)%/)
       if (match) {
         progressMap.set(url, { progress: parseFloat(match[1]), status: 'downloading' })
+      }
+    })
+
+    dlProcess.stderr?.on('data', (data: string) => {
+      if (targetDuration > 0) {
+        const match = data.toString().match(/time=(\d{2}):(\d{2}):(\d{2}\.\d{2})/)
+        if (match) {
+          const h = parseInt(match[1])
+          const m = parseInt(match[2])
+          const s = parseFloat(match[3])
+          const currentSeconds = h * 3600 + m * 60 + s
+          let progress = (currentSeconds / targetDuration) * 100
+          if (progress > 100) progress = 100
+          progressMap.set(url, { progress: parseFloat(progress.toFixed(1)), status: 'downloading' })
+        }
       }
     })
 
