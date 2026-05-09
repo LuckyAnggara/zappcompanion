@@ -1,10 +1,31 @@
 import React, { useState, useEffect } from 'react'
+import * as Slider from '@radix-ui/react-slider'
 
 interface Metadata {
   title: string
   thumbnail: string
   uploader: string
   formats: any[]
+  duration?: number
+}
+
+const formatTime = (seconds: number): string => {
+  if (isNaN(seconds) || seconds < 0) return ''
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+}
+
+const parseTime = (timeStr: string): number => {
+  if (!timeStr) return 0
+  const parts = timeStr.split(':').map(Number)
+  if (parts.some(isNaN)) return 0
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+  if (parts.length === 2) return parts[0] * 60 + parts[1]
+  if (parts.length === 1) return parts[0]
+  return 0
 }
 
 export default function DownloaderPage(): React.JSX.Element {
@@ -18,6 +39,7 @@ export default function DownloaderPage(): React.JSX.Element {
   const [activeDownloadMeta, setActiveDownloadMeta] = useState<any>(null)
   const [sectionStart, setSectionStart] = useState('')
   const [sectionEnd, setSectionEnd] = useState('')
+  const [sliderValues, setSliderValues] = useState<[number, number]>([0, 100])
 
   const isDownloading = progress !== null
 
@@ -72,6 +94,15 @@ export default function DownloaderPage(): React.JSX.Element {
     try {
       const data = await window.api.getMetadata(url)
       setMetadata(data)
+      const duration = data.duration || 0
+      if (duration > 0) {
+        setSliderValues([0, duration])
+        setSectionStart('00:00')
+        setSectionEnd(formatTime(duration))
+      } else {
+        setSectionStart('')
+        setSectionEnd('')
+      }
       setStatus('Analysis complete. Select options and clip.')
       setLogs(prev => [...prev, `[INFO] Resource analysis successful for ${url}`])
     } catch (err: any) {
@@ -100,6 +131,31 @@ export default function DownloaderPage(): React.JSX.Element {
       setMetadata(null)
       setUrl('')
     }
+  }
+
+  const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setSectionStart(val)
+    const parsed = parseTime(val)
+    if (parsed >= 0 && parsed <= sliderValues[1]) {
+      setSliderValues([parsed, sliderValues[1]])
+    }
+  }
+
+  const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setSectionEnd(val)
+    const parsed = parseTime(val)
+    const duration = metadata?.duration || 100
+    if (parsed >= sliderValues[0] && parsed <= duration) {
+      setSliderValues([sliderValues[0], parsed])
+    }
+  }
+
+  const handleSliderChange = (value: number[]) => {
+    setSliderValues([value[0], value[1]])
+    setSectionStart(formatTime(value[0]))
+    setSectionEnd(formatTime(value[1]))
   }
 
   const availableFormats = metadata?.formats
@@ -155,12 +211,31 @@ export default function DownloaderPage(): React.JSX.Element {
 
                     <div className="trim-selector">
                       <label>Trim Video (Optional):</label>
+                      
+                      {metadata.duration ? (
+                        <div className="slider-container">
+                          <Slider.Root 
+                            className="SliderRoot" 
+                            value={sliderValues} 
+                            max={metadata.duration} 
+                            step={1}
+                            onValueChange={handleSliderChange}
+                          >
+                            <Slider.Track className="SliderTrack">
+                              <Slider.Range className="SliderRange" />
+                            </Slider.Track>
+                            <Slider.Thumb className="SliderThumb" aria-label="Start time" />
+                            <Slider.Thumb className="SliderThumb" aria-label="End time" />
+                          </Slider.Root>
+                        </div>
+                      ) : null}
+
                       <div className="trim-inputs">
                         <input 
                           type="text" 
                           placeholder="Start (e.g. 01:20)" 
                           value={sectionStart}
-                          onChange={(e) => setSectionStart(e.target.value)}
+                          onChange={handleStartChange}
                           className="brutalist-input small-input"
                         />
                         <span className="trim-separator">to</span>
@@ -168,7 +243,7 @@ export default function DownloaderPage(): React.JSX.Element {
                           type="text" 
                           placeholder="End (e.g. 02:45)" 
                           value={sectionEnd}
-                          onChange={(e) => setSectionEnd(e.target.value)}
+                          onChange={handleEndChange}
                           className="brutalist-input small-input"
                         />
                       </div>
@@ -262,6 +337,55 @@ export default function DownloaderPage(): React.JSX.Element {
           font-weight: bold;
           margin-bottom: 10px;
           text-transform: uppercase;
+        }
+
+        .slider-container {
+          margin-bottom: 15px;
+          padding: 10px 5px;
+        }
+
+        .SliderRoot {
+          position: relative;
+          display: flex;
+          align-items: center;
+          user-select: none;
+          touch-action: none;
+          width: 100%;
+          height: 20px;
+        }
+
+        .SliderTrack {
+          background-color: var(--black);
+          position: relative;
+          flex-grow: 1;
+          border-radius: 9999px;
+          height: 6px;
+        }
+
+        .SliderRange {
+          position: absolute;
+          background-color: var(--blue);
+          border-radius: 9999px;
+          height: 100%;
+        }
+
+        .SliderThumb {
+          display: block;
+          width: 20px;
+          height: 20px;
+          background-color: var(--orange);
+          border: 3px solid var(--black);
+          border-radius: 50%;
+          cursor: grab;
+        }
+
+        .SliderThumb:hover {
+          background-color: var(--white);
+        }
+
+        .SliderThumb:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px var(--blue);
         }
 
         .trim-inputs {
@@ -371,4 +495,3 @@ export default function DownloaderPage(): React.JSX.Element {
     </div>
   )
 }
-
